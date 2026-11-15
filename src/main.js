@@ -270,6 +270,7 @@ bind.home = () => {
 let afterPermission = null;
 
 async function needMic(next) {
+  if (PREVIEW) return next();
   let granted = load('micOk', false);
   try {
     const p = await navigator.permissions?.query({ name: 'microphone' });
@@ -317,7 +318,11 @@ bind.permission = () => {
   });
 };
 
+// Design-preview build (no microphone available in that host page).
+const PREVIEW = import.meta.env.VITE_PREVIEW === '1';
+
 function micErrorText(e) {
+  if (PREVIEW) return 'This is a design preview, so the mic is switched off here. Tap "Count by hand" to try the app with the +1 button.';
   if (!window.isSecureContext) return 'The mic only works on a secure (https://) link. Open Seeti from its https address.';
   if (e?.name === 'NotAllowedError') return 'Mic is blocked. Tap the 🔒 icon in the address bar (or phone Settings → Browser → Microphone) and allow it, then try again.';
   if (e?.name === 'NotFoundError') return 'No microphone found on this device.';
