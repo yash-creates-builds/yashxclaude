@@ -1,44 +1,56 @@
 @import "tailwindcss";
 
+/* Palette: quiet Bauhaus greys + one turmeric accent (flame) + chilli for the alarm. */
 @theme {
-  --color-cream: #FFF6E9;
-  --color-paper: #FFFBF4;
+  --color-cream: #F6F4EE;   /* page */
+  --color-paper: #FBFAF7;   /* cards */
+  --color-mist: #E6E1D7;    /* soft fills */
+  --color-sand: #BEB8AD;    /* mid tone */
+  --color-ink: #111111;     /* text + black shapes */
+  --color-ink-2: #333333;
+  --color-ink-3: #777777;
+  --color-muted: #6B665E;   /* secondary text (readable on cream) */
+  --color-line: #D9D3C7;    /* hairlines */
   --color-haldi: #F5B700;
-  --color-haldi-soft: #FCE9AE;
   --color-mirch: #E63946;
-  --color-ink: #3B2314;
-  --color-ink-2: #6B4E3A;
-  --color-line: #EADBC6;
-  --color-tan: #EBDAC0;
-  --color-tan-2: #D9C09C;
-  --font-display: "Baloo 2", ui-rounded, system-ui, sans-serif;
+  --font-display: "Jost", system-ui, sans-serif;
   --font-mono: "DM Mono", ui-monospace, monospace;
 }
 
 :root {
-  --cream: #FFF6E9; --haldi: #F5B700; --mirch: #E63946;
-  --ink: #3B2314; --ink-2: #6B4E3A; --tan: #EBDAC0; --tan-2: #D9C09C; --line: #EADBC6;
+  --cream: #F6F4EE; --paper: #FBFAF7; --mist: #E6E1D7; --sand: #BEB8AD;
+  --ink: #111111; --ink-2: #333333; --ink-3: #777777; --muted: #6B665E; --line: #D9D3C7;
+  --haldi: #F5B700; --mirch: #E63946;
   color-scheme: light;
 }
 
 html, body { background: var(--cream); color: var(--ink); }
 body {
   font-family: var(--font-display);
+  font-weight: 400;
   -webkit-tap-highlight-color: transparent;
   overscroll-behavior-y: none;
 }
 button { touch-action: manipulation; cursor: pointer; }
-button:focus-visible, [tabindex]:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 
-/* Small-caps labels with wide tracking (Bauhaus poster feel). */
-.label { font-family: var(--font-mono); font-size: 11px; letter-spacing: .22em; text-transform: uppercase; color: var(--ink-2); }
-.rule { height: 1px; background: var(--line); }
+/* Small spaced-out caps labels (the poster look). */
+.label { font-family: var(--font-mono); font-size: 11px; letter-spacing: .24em; text-transform: uppercase; color: var(--muted); }
+.mono-emoji { filter: grayscale(1) contrast(1.15); }
+[aria-pressed="true"] .mono-emoji { filter: grayscale(1) invert(1) contrast(1.2); }
+
+/* Framed "screen" around the hero, like a phone/game screen. */
+.screen-frame { border: 7px solid var(--ink); border-radius: 30px; background: var(--paper); overflow: hidden; }
+
+/* Thin outlined progress bar (the WEIGHT-gauge look). */
+.bar { height: 10px; border: 1.5px solid var(--ink); border-radius: 99px; background: var(--paper); overflow: hidden; }
+.bar > div { height: 100%; background: var(--ink); transition: width .4s; }
 
 /* Cooker */
-.cooker { width: 100%; height: auto; overflow: visible; }
-.cooker-count { font-family: "Baloo 2", sans-serif; font-weight: 800; font-size: 92px; fill: var(--ink); }
-.cooker-count.small { font-size: 46px; fill: var(--ink-2); }
-.cooker-target { font-family: "DM Mono", monospace; font-size: 15px; letter-spacing: .2em; fill: var(--ink-2); }
+.cooker { width: 100%; height: auto; overflow: visible; display: block; }
+.cooker-count { font-family: "Jost", sans-serif; font-weight: 300; font-size: 88px; fill: var(--ink); }
+.cooker-target { font-family: "DM Mono", monospace; font-size: 12px; letter-spacing: .3em; fill: var(--muted); }
+.scene-label { font-size: 8px; fill: var(--ink); }
 .cooker .puff { opacity: 0; transform-box: fill-box; transform-origin: center; }
 .cooker.whistling .puff { animation: puff 1.8s ease-out; }
 .cooker.whistling .p2 { animation-delay: .12s; }
@@ -58,9 +70,8 @@ button:focus-visible, [tabindex]:focus-visible { outline: 3px solid var(--ink); 
 @keyframes jiggle { 0%,100% { transform: rotate(0); } 25% { transform: rotate(-7deg); } 75% { transform: rotate(7deg); } }
 @keyframes flicker { 0%,100% { transform: scaleY(1); } 50% { transform: scaleY(1.22) scaleX(.9); } }
 
-/* Count pop */
 .pop { animation: pop .5s cubic-bezier(.3,1.6,.5,1); }
-@keyframes pop { 0% { transform: scale(.85); } 60% { transform: scale(1.06); } 100% { transform: scale(1); } }
+@keyframes pop { 0% { transform: scale(.9); } 60% { transform: scale(1.04); } 100% { transform: scale(1); } }
 
 /* Alarm overlay */
 .alarm { animation: alarmbg .9s steps(1) infinite; }
@@ -69,12 +80,14 @@ button:focus-visible, [tabindex]:focus-visible { outline: 3px solid var(--ink); 
 @keyframes shake { 0%,100% { transform: rotate(0); } 25% { transform: rotate(-3deg); } 75% { transform: rotate(3deg); } }
 
 /* Dish tiles */
-.tile[aria-pressed="true"] { background: var(--haldi); border-color: var(--ink); box-shadow: 4px 4px 0 var(--ink); transform: translate(-2px,-2px); }
-.tile { transition: transform .12s, box-shadow .12s, background .12s; }
-.tile:active { transform: translate(0,0); box-shadow: none; }
+.tile { transition: background .15s, color .15s; }
+.tile[aria-pressed="true"] { background: var(--ink); color: var(--cream); border-color: var(--ink); }
+.tile[aria-pressed="true"] .tile-sub { color: var(--sand); }
 
-.btn-primary { background: var(--ink); color: var(--cream); box-shadow: 0 5px 0 #1d110a; }
-.btn-primary:active { transform: translateY(4px); box-shadow: 0 1px 0 #1d110a; }
+.btn-primary { background: var(--ink); color: var(--cream); }
+.btn-primary:active { background: var(--ink-2); transform: translateY(1px); }
+.btn-line { border: 1.5px solid var(--ink); background: transparent; }
+.btn-line:active { background: var(--mist); }
 
 .fade-in { animation: fadein .25s ease-out; }
 @keyframes fadein { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
