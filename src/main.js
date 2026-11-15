@@ -129,26 +129,29 @@ function segProgress(count, target, animateLast = false) {
   </div>`;
 }
 
-// Bottom sheet confirmation (no pop-up dialogs).
-function confirmSheet({ title, text, yes, no = 'Cancel', danger = false }) {
+// Bottom sheet with big choices (no pop-up dialogs). Resolves with the chosen value (null = dismissed).
+function actionSheet({ title, text, actions }) {
   return new Promise((resolve) => {
     const el = document.createElement('div');
     el.className = 'sheet-bg fixed inset-0 z-40 flex items-end justify-center bg-ink/40';
-    el.innerHTML = `<div class="sheet w-full max-w-md rounded-t-[32px] bg-paper px-6 pt-3" role="dialog" aria-modal="true" aria-label="${esc(title)}" style="padding-bottom:max(1.5rem,env(safe-area-inset-bottom))">
+    el.innerHTML = `<div class="sheet w-full max-w-md rounded-t-[32px] bg-paper px-6 pt-3 text-ink" role="dialog" aria-modal="true" aria-label="${esc(title)}" style="padding-bottom:max(1.5rem,env(safe-area-inset-bottom))">
       <div class="mx-auto mb-4 h-1.5 w-12 rounded-full bg-sand"></div>
       <h2 class="text-[22px] font-extrabold">${esc(title)}</h2>
       <p class="mt-1 text-[17px] text-muted">${esc(text)}</p>
       <div class="mt-5 grid gap-2">
-        <button data-yes class="tap min-h-14 rounded-full text-[18px] font-bold ${danger ? 'bg-mirch text-white' : 'btn-primary'}">${esc(yes)}</button>
-        <button data-no class="tap btn-soft min-h-14 rounded-full text-[18px] font-bold">${esc(no)}</button>
+        ${actions.map((a, i) => `<button data-act="${i}" class="tap min-h-14 rounded-full text-[18px] font-bold ${a.danger ? 'bg-mirch text-white' : a.primary ? 'btn-primary' : 'btn-soft'}">${esc(a.label)}</button>`).join('')}
       </div></div>`;
     document.body.appendChild(el);
     const close = (v) => { el.remove(); resolve(v); };
-    el.querySelector('[data-yes]').addEventListener('click', () => { tick(); close(true); });
-    el.querySelector('[data-no]').addEventListener('click', () => close(false));
-    el.addEventListener('click', (e) => { if (e.target === el) close(false); });
-    el.querySelector('[data-no]').focus();
+    el.querySelectorAll('[data-act]').forEach((b) => b.addEventListener('click', () => { tick(); close(actions[Number(b.dataset.act)].value); }));
+    el.addEventListener('click', (e) => { if (e.target === el) close(null); });
+    el.querySelector('[data-act]').focus();
   });
+}
+
+async function confirmSheet({ title, text, yes, no = 'Cancel', danger = false }) {
+  const v = await actionSheet({ title, text, actions: [{ label: yes, value: true, primary: !danger, danger }, { label: no, value: false }] });
+  return v === true;
 }
 
 // Snackbar with an optional action (e.g. Undo), auto-hides.
@@ -293,9 +296,9 @@ bind.history = () => {
   }));
 };
 
-function addHistory(s) {
-  state.history = [{ dishId: s.dish.id, name: s.dish.name, count: s.count, at: Date.now(),
-    mins: s.endedAt ? Math.max(1, Math.round((s.endedAt - s.startedAt) / 60000)) : null }, ...state.history].slice(0, 20);
+function addHistory(c, s) {
+  state.history = [{ dishId: c.dish.id, name: c.dish.name, count: c.count, at: Date.now(),
+    mins: c.finishedAt ? Math.max(1, Math.round((c.finishedAt - s.startedAt) / 60000)) : null }, ...state.history].slice(0, 20);
   save('history', state.history);
 }
 
@@ -435,10 +438,23 @@ function micErrorText(e) {
 }
 
 /* --------------------------------------------------------------- SESSION */
+const newCooker = (dish, target) => ({ dish, target, count: 0, finishedAt: null, releaseEnd: null, released: false, extraMs: 0 });
+const openCookers = (s = state.session) => s.cookers.map((c, i) => i).filter((i) => s.cookers[i].count < s.cookers[i].target);
+const isMulti = (s = state.session) => s.cookers.length > 1;
+const say = (text) => speak(text, state.settings.lang);
+const V = () => VOICE[state.settings.lang];
+
+let watchTimer = null;
+let releaseTicker = null;
+let whichSheet = null;
+
 async function startSession(targetOverride) {
   const d = selected();
-  const target = targetOverride ?? d.count;
-  state.session = { dish: d, target, count: 0, log: [], startedAt: new Date(), phase: 'learning', error: null };
+  state.session = {
+    cookers: [newCooker(d, targetOverride ?? d.count)],
+    log: [], startedAt: new Date(), phase: 'learning', error: null,
+    unassigned: 0, lastWhistleAt: null, nudgedAt: null, flags: {},
+  };
   state.aiStatus = 'off';
   go('listen');
   try {
@@ -453,13 +469,19 @@ async function startSession(targetOverride) {
     if (state.screen === 'listen') addNote('The phone stopped the mic. Tap Stop and start again.');
   });
   detector = new WhistleDetector(mic, buildParams(state.calib, state.settings.sens), {
-    onWhistle: ({ source, at }) => countWhistle(source, at),
-    onPhase: (p) => { state.session.phase = p; updateStatus(); },
+    onWhistle: ({ source, at }) => onDetected(source, at),
+    onPhase: (p) => { if (state.session) { state.session.phase = p; updateStatus(); } },
   });
   detector.start();
   keepAwake(true).then(updateWakeNote);
-  speak(VOICE[state.settings.lang].hello, state.settings.lang);
+  say(V().hello);
   if (state.settings.ai) startAiLayer();
+  clearInterval(watchTimer);
+  watchTimer = setInterval(watchdog, 1000);
+  try {
+    const b = await navigator.getBattery?.();
+    if (b && !b.charging && b.level < 0.15) addNote('Battery low. Plug in so Seeti keeps listening.');
+  } catch { /* not supported */ }
 }
 
 async function startAiLayer() {
@@ -489,35 +511,173 @@ function stopListening() {
   stopAi = null;
   mic?.close();
   mic = null;
+  clearInterval(watchTimer);
+  watchTimer = null;
   cancelAnimationFrame(meterRaf);
   document.querySelector('.snack')?.remove();
+  closeWhich();
 }
 
-function countWhistle(source = 'sound', at = new Date()) {
+function endSession() {
+  stopListening();
+  clearInterval(releaseTicker);
+  releaseTicker = null;
+  keepAwake(false);
+}
+
+/* Checks every second: silent mic, non-stop noise, and "no whistle for too long". */
+function watchdog() {
   const s = state.session;
-  if (!s || s.count >= s.target) return;
-  s.count += 1;
-  s.log.push({ n: s.count, time: at, source });
+  if (!s || !detector || state.screen !== 'listen') return;
+  const L = detector.live;
+  if (L.phase === 'learning') return;
+
+  if (L.deadFor >= 30 && !s.flags.dead) {
+    s.flags.dead = true;
+    vibrate([300, 100, 300]);
+    addNote("I can't hear anything. Is something covering the mic?");
+    snackbar("I can't hear anything. Check the mic.");
+  } else if (L.deadFor === 0) {
+    s.flags.dead = false;
+  }
+
+  if (L.loudFor >= 30 && !s.flags.noisy && state.settings.sens !== 'low') {
+    s.flags.noisy = true;
+    noisySheet();
+  }
+
+  if (!openCookers().length || document.querySelector('.alarm')) return;
+  const times = s.log.filter((e) => e.n).map((e) => +new Date(e.time));
+  let limit = 15 * 60_000;
+  if (times.length >= 2) {
+    const avgGap = (times.at(-1) - times[0]) / (times.length - 1);
+    limit = Math.max(3 * 60_000, 2 * avgGap);
+  }
+  const since = s.nudgedAt || s.lastWhistleAt || +s.startedAt;
+  if (Date.now() - since > limit) {
+    s.nudgedAt = Date.now();
+    nudgeSheet();
+  }
+}
+
+async function nudgeSheet() {
+  vibrate([400, 150, 400]);
+  chime();
+  say(V().noWhistle);
+  const v = await actionSheet({
+    title: 'No whistle yet',
+    text: 'Is the gas on? Is the phone near the cooker?',
+    actions: [
+      { label: 'Keep listening', value: 'keep', primary: true },
+      { label: 'Move phone closer', value: 'closer' },
+      { label: 'Count by hand', value: 'hand' },
+    ],
+  });
+  if (v === 'closer') snackbar('Keep the phone 1–2 metres from the cooker, mic facing it.');
+  if (v === 'hand') {
+    stopListening();
+    state.session.phase = 'manual';
+    keepAwake(true);
+    render();
+    addNote('Counting by hand. Tap +1 for each whistle.');
+  }
+}
+
+async function noisySheet() {
+  vibrate(200);
+  const v = await actionSheet({
+    title: "It's very noisy",
+    text: 'I may miss a whistle or count a wrong sound. A stricter setting can help.',
+    actions: [
+      { label: 'Use "Noisy kitchen" setting', value: 'low', primary: true },
+      { label: 'Keep as it is', value: 'keep' },
+    ],
+  });
+  if (v === 'low') {
+    state.settings.sens = 'low';
+    saveSettings();
+    detector?.setParams(buildParams(state.calib, 'low'));
+    snackbar('Switched to Noisy kitchen');
+  }
+}
+
+/* A whistle was heard: give it to the right cooker. */
+function onDetected(source, at) {
+  const s = state.session;
+  if (!s) return;
+  const open = openCookers();
+  if (!open.length) return;
+  s.lastWhistleAt = Date.now();
+  if (open.length === 1) return countWhistle(open[0], source, at);
+  askWhich(source, at);
+}
+
+function closeWhich() {
+  whichSheet?.el.remove();
+  clearTimeout(whichSheet?.timer);
+  whichSheet = null;
+}
+
+// "Which cooker whistled?" — big buttons; no answer in 15 s → kept as "not assigned".
+function askWhich(source, at, fromChip = false) {
+  const s = state.session;
+  if (whichSheet) { if (!fromChip) { s.unassigned += 1; renderCards(); } return; }
+  const open = openCookers();
+  vibrate([150, 80, 150]);
+  if (!fromChip) { chime(); say(V().which); }
+  const el = document.createElement('div');
+  el.className = 'sheet-bg fixed inset-0 z-40 flex items-end justify-center bg-ink/40';
+  el.innerHTML = `<div class="sheet w-full max-w-md rounded-t-[32px] bg-paper px-6 pt-3 text-ink" role="dialog" aria-modal="true" aria-label="Which cooker whistled?" style="padding-bottom:max(1.5rem,env(safe-area-inset-bottom))">
+    <div class="mx-auto mb-4 h-1.5 w-12 rounded-full bg-sand"></div>
+    <h2 class="text-[24px] font-extrabold">Which cooker whistled?</h2>
+    <div class="mt-4 grid grid-cols-2 gap-3">
+      ${open.map((i) => { const c = s.cookers[i]; return `<button data-pick="${i}" class="tap flex flex-col items-center gap-1 rounded-3xl p-4" style="background:${DISH_BG[c.dish.id] || DISH_BG.custom}">
+        <span class="text-[44px] leading-none">${c.dish.emoji}</span><span class="text-[19px] font-extrabold">${esc(c.dish.name)}</span><span class="text-[15px] font-semibold text-ink-2">${c.count} of ${c.target}</span></button>`; }).join('')}
+    </div>
+    <button data-pick="none" class="tap btn-soft mt-3 min-h-14 w-full rounded-full text-[18px] font-bold">Neither, it wasn't a whistle</button>
+    ${fromChip ? '' : '<p class="mt-3 text-center text-[15px] text-muted">No answer in 15 seconds? I\'ll keep it for later.</p>'}
+  </div>`;
+  document.body.appendChild(el);
+  whichSheet = { el, timer: null };
+  const done = (v) => {
+    closeWhich();
+    if (v === 'later') { s.unassigned += 1; renderCards(); return; }
+    if (fromChip) { s.unassigned = Math.max(0, s.unassigned - 1); renderCards(); }
+    if (v !== 'none') countWhistle(Number(v), fromChip ? 'manual' : source, at, true);
+  };
+  el.querySelectorAll('[data-pick]').forEach((b) => b.addEventListener('click', () => { tick(); done(b.dataset.pick); }));
+  if (!fromChip) whichSheet.timer = setTimeout(() => done('later'), 15_000);
+  else el.addEventListener('click', (e) => { if (e.target === el) closeWhich(); });
+}
+
+function countWhistle(i, source = 'sound', at = new Date(), chosen = false) {
+  const s = state.session;
+  const c = s?.cookers[i];
+  if (!c || c.count >= c.target) return;
+  c.count += 1;
+  s.log.push({ n: c.count, ci: i, time: at, source });
   vibrate(source === 'manual' ? 30 : [180, 80, 180]);
   puff($('#liveCooker'));
   updateCount(true);
   renderLog();
-  const lang = state.settings.lang;
-  if (s.count >= s.target) { reachTarget(); return; }
+  const prefix = isMulti() ? `${c.dish.name}. ` : '';
+  if (c.count >= c.target) { cookerDone(i); return; }
   chime();
-  const left = s.target - s.count;
-  setTimeout(() => speak(VOICE[lang].count(s.count) + (left === 1 ? '. ' + VOICE[lang].oneLeft : ''), lang), 350);
-  // Heard automatically? Offer a one-tap fix in case it wasn't a whistle.
-  if (source !== 'manual') snackbar(`${ordinal(s.count)} whistle counted`, 'Undo', undoWhistle);
+  const left = c.target - c.count;
+  setTimeout(() => say(prefix + V().count(c.count) + (left === 1 ? '. ' + V().oneLeft : '')), 350);
+  if (source !== 'manual' && !chosen) {
+    snackbar(`${isMulti() ? c.dish.name + ': ' : ''}${ordinal(c.count)} whistle counted`, 'Undo', () => undoWhistle(i));
+  }
 }
 
-function undoWhistle() {
+function undoWhistle(i) {
   const s = state.session;
-  if (!s || s.count === 0) return;
-  for (let i = s.log.length - 1; i >= 0; i--) {
-    if (s.log[i].n === s.count) { s.log.splice(i, 1); break; }
+  const c = s?.cookers[i];
+  if (!c || c.count === 0 || c.finishedAt) return;
+  for (let k = s.log.length - 1; k >= 0; k--) {
+    if (s.log[k].n === c.count && s.log[k].ci === i) { s.log.splice(k, 1); break; }
   }
-  s.count -= 1;
+  c.count -= 1;
   vibrate(30);
   updateCount();
   renderLog();
@@ -528,34 +688,115 @@ function addNote(text) {
   renderLog();
 }
 
-function reachTarget() {
-  stopListening();
-  state.session.endedAt = new Date();
-  addHistory(state.session);
-  showAlarm({
+// One cooker reached its whistles.
+function cookerDone(i) {
+  const s = state.session;
+  const c = s.cookers[i];
+  c.finishedAt = new Date();
+  addHistory(c, s);
+  if (!openCookers().length) stopListening();
+  queueAlarm({
     title: { hi: 'Gas band karo!', en: 'Turn off the gas!', gu: 'ગેસ બંધ કરો!' },
     sub: 'Turn off the gas!',
     kind: 'gasOff',
-    onStop: () => {
-      if (state.settings.releaseOn) startRelease();
-      else { keepAwake(false); go('done'); }
-    },
+    dish: c.dish.name,
+    onStop: () => afterGasOff(i),
   });
 }
 
+function afterGasOff(i) {
+  const s = state.session;
+  const c = s.cookers[i];
+  if (state.settings.releaseOn) c.releaseEnd = Date.now() + state.settings.releaseMin * 60_000;
+  else c.released = true;
+  if (!isMulti()) {
+    if (c.releaseEnd) { keepAwake(true); go('release'); } else { endSession(); go('done'); }
+    return;
+  }
+  // Two cookers: timers live on the cards; the other cooker keeps counting.
+  render();
+  startReleaseTicker();
+  maybeAllDone();
+}
+
+function startReleaseTicker() {
+  if (releaseTicker) return;
+  releaseTicker = setInterval(() => {
+    const s = state.session;
+    if (!s) return;
+    s.cookers.forEach((c, i) => {
+      if (!c.releaseEnd || c.released) return;
+      const left = c.releaseEnd - Date.now();
+      const el = $(`[data-rel-left="${i}"]`);
+      if (el) el.textContent = fmtLeft(left);
+      if (left <= 0) {
+        c.released = true;
+        queueAlarm({
+          title: { hi: 'Cooker khol sakte ho!', en: 'Safe to open now!', gu: 'કૂકર ખોલી શકો!' },
+          sub: 'Safe to open now!',
+          kind: 'released',
+          dish: c.dish.name,
+          onStop: () => { renderCards(); maybeAllDone(); },
+        });
+      }
+    });
+  }, 500);
+}
+
+function maybeAllDone() {
+  const s = state.session;
+  if (!s || openCookers().length || s.cookers.some((c) => !c.released) || document.querySelector('.alarm')) return;
+  endSession();
+  go('done');
+}
+
+const fmtLeft = (ms) => { const t = Math.max(0, ms); return `${String(Math.floor(t / 60000)).padStart(2, '0')}:${String(Math.floor((t % 60000) / 1000)).padStart(2, '0')}`; };
+
 /* ---------------------------------------------------------------- LISTEN */
 function logList(log) {
+  const multi = isMulti();
   if (!log.length) return `<p class="py-2 text-[16px] text-sand">Each whistle shows up here with its time.</p>`;
   return `<ol class="space-y-2">${log.map((e, i) => {
     const fresh = i === log.length - 1 ? 'arrive' : '';
-    return e.type === 'note'
-      ? `<li class="${fresh} rounded-2xl bg-brown-2 px-4 py-2.5 text-[16px] text-cream">${esc(e.text)}</li>`
-      : `<li class="${fresh} flex items-center gap-3 rounded-2xl bg-brown-2 px-4 py-2.5">
-          <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-haldi text-ink">${I.check('h-5 w-5')}</span>
-          <span class="flex-1 text-[18px] font-bold">${ordinal(e.n)} whistle${e.source === 'manual' ? ' <span class="text-[15px] font-semibold text-sand">· added by you</span>' : ''}</span>
-          <span class="text-[15px] text-sand">${fmtTime(e.time)}</span>
-        </li>`;
+    if (e.type === 'note') return `<li class="${fresh} rounded-2xl bg-brown-2 px-4 py-2.5 text-[16px] text-cream">${esc(e.text)}</li>`;
+    const dish = multi ? state.session.cookers[e.ci].dish : null;
+    return `<li class="${fresh} flex items-center gap-3 rounded-2xl bg-brown-2 px-4 py-2.5">
+        <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-haldi text-ink">${dish ? `<span class="text-[17px]">${dish.emoji}</span>` : I.check('h-5 w-5')}</span>
+        <span class="flex-1 text-[18px] font-bold">${dish ? `${esc(dish.name)} · ` : ''}${ordinal(e.n)} whistle${e.source === 'manual' ? ' <span class="text-[15px] font-semibold text-sand">· by you</span>' : ''}</span>
+        <span class="text-[15px] text-sand">${fmtTime(e.time)}</span>
+      </li>`;
   }).join('')}</ol>`;
+}
+
+function cookerCard(c, i) {
+  const open = c.count < c.target;
+  const status = open ? `${c.target - c.count} to go`
+    : c.released ? 'Ready ✓'
+    : c.releaseEnd ? `Safe to open in <span data-rel-left="${i}" class="tabular-nums">${fmtLeft(c.releaseEnd - Date.now())}</span>`
+    : 'Turn off the gas';
+  return `<div class="rounded-3xl bg-paper p-3 text-ink shadow-sm ${open ? '' : 'ring-2 ring-leaf'}">
+    <div class="flex items-center gap-2">
+      <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-2xl" style="background:${DISH_BG[c.dish.id] || DISH_BG.custom}">${c.dish.emoji}</span>
+      <span class="truncate text-[18px] font-extrabold">${esc(c.dish.name)}</span>
+    </div>
+    <p class="mt-2 text-center leading-none"><span class="text-[52px] font-extrabold">${c.count}</span><span class="text-[18px] font-bold text-muted"> / ${c.target}</span></p>
+    <div class="mt-3">${segProgress(c.count, c.target)}</div>
+    <p class="mt-2 text-center text-[15px] font-bold text-ink-2">${status}</p>
+    ${open ? `<div class="mt-2 grid grid-cols-[1fr_1.4fr] gap-2">
+      <button data-cminus="${i}" class="tap btn-soft min-h-12 rounded-full text-[18px] font-extrabold" aria-label="Remove one whistle from ${esc(c.dish.name)}">−1</button>
+      <button data-cplus="${i}" class="tap btn-primary min-h-12 rounded-full text-[18px] font-extrabold" aria-label="Add one whistle to ${esc(c.dish.name)}">+1</button></div>` : ''}
+  </div>`;
+}
+
+function renderCards() {
+  const s = state.session;
+  const el = $('#cards');
+  if (el && s) el.innerHTML = s.cookers.map(cookerCard).join('');
+  const chip = $('#unassigned');
+  if (chip && s) {
+    chip.classList.toggle('hidden', !s.unassigned || !openCookers().length);
+    chip.querySelector('span').textContent = `${s.unassigned} whistle${s.unassigned === 1 ? '' : 's'} not assigned · tap to choose`;
+  }
 }
 
 function listen() {
@@ -563,7 +804,7 @@ function listen() {
   if (s.error) {
     return `
     <main class="flex min-h-dvh flex-col">
-      ${topBar(esc(s.dish.name), { back: true })}
+      ${topBar(esc(s.cookers[0].dish.name), { back: true })}
       <div class="flex flex-1 flex-col px-5">
         <span class="mx-auto mt-4 flex h-20 w-20 items-center justify-center rounded-full bg-[#FDECEA] text-[#B3121C]">${I.mic('h-10 w-10')}</span>
         <h2 class="mt-4 text-center text-[24px] font-extrabold">The mic did not start</h2>
@@ -575,6 +816,9 @@ function listen() {
       </div>
     </main>`;
   }
+  const multi = isMulti();
+  const c0 = s.cookers[0];
+  const listening = s.phase !== 'manual' && openCookers(s).length > 0;
   return `
   <main class="flex min-h-dvh flex-col bg-brown text-cream">
     <div class="relative overflow-hidden bg-[#FFD98E]">
@@ -582,13 +826,15 @@ function listen() {
         <button data-stop class="tap flex min-h-12 items-center gap-2 rounded-full bg-white/90 px-4 text-[17px] font-bold text-ink shadow-sm">${I.stop('h-4 w-4')} Stop</button>
         <span id="aiBadge" class="hidden rounded-full bg-leaf px-3 py-1.5 text-[14px] font-bold text-white shadow-sm">Smart listening</span>
       </div>
-      <div id="cookerWrap" class="mx-auto max-w-md pt-12">${cookerSVG({ count: s.count, target: s.target, scene: true, id: 'liveCooker' })}</div>
+      ${multi
+        ? `<div id="cards" class="mx-auto grid max-w-md grid-cols-2 gap-3 px-4 pb-12" style="padding-top:calc(4.5rem + env(safe-area-inset-top))">${s.cookers.map(cookerCard).join('')}</div>`
+        : `<div id="cookerWrap" class="mx-auto max-w-md pt-12">${cookerSVG({ count: c0.count, target: c0.target, scene: true, id: 'liveCooker' })}</div>`}
     </div>
 
-    <section class="relative -mt-8 flex-1 rounded-t-[32px] bg-brown px-5 pt-6" style="padding-bottom:calc(110px + env(safe-area-inset-bottom))">
+    <section class="relative -mt-8 flex-1 rounded-t-[32px] bg-brown px-5 pt-6" style="padding-bottom:calc(${multi ? 40 : 110}px + env(safe-area-inset-bottom))">
       <div class="flex items-start justify-between gap-4">
         <div class="min-w-0">
-          <h1 class="text-[30px] font-extrabold leading-tight">${esc(s.dish.name)}</h1>
+          <h1 class="text-[30px] font-extrabold leading-tight">${multi ? 'Two cookers' : esc(c0.dish.name)}</h1>
           <p class="mt-0.5 flex items-center gap-2 text-[17px] font-semibold text-sand" aria-live="polite"><span id="status"></span><span id="dots" class="dots"><span></span><span></span><span></span></span></p>
         </div>
         <div class="relative h-16 w-16 shrink-0" aria-hidden="true">
@@ -601,10 +847,12 @@ function listen() {
         </div>
       </div>
 
-      <div class="mt-4" id="progress">${segProgress(s.count, s.target)}</div>
-      <p id="countText" class="mt-2 text-[17px] text-sand"><b class="text-cream">${s.count} of ${s.target}</b> whistles</p>
+      ${multi ? `<button id="unassigned" class="tap mt-3 hidden w-full items-center gap-2 rounded-2xl bg-haldi px-4 py-3 text-left text-[17px] font-bold text-ink">${I.bell('h-5 w-5 shrink-0')}<span></span></button>` : `
+      <div class="mt-4" id="progress">${segProgress(c0.count, c0.target)}</div>
+      <p id="countText" class="mt-2 text-[17px] text-sand"><b class="text-cream">${c0.count} of ${c0.target}</b> whistles</p>
+      ${listening ? '<button data-add class="tap mt-3 flex min-h-12 items-center gap-2 rounded-full bg-brown-2 px-4 text-[16px] font-bold">+ Add a second cooker</button>' : ''}`}
 
-      <div class="mt-4 rounded-2xl bg-brown-2/60 px-4 py-3">
+      <div class="mt-4 rounded-2xl bg-brown-2/60 px-4 py-3 ${listening ? '' : 'hidden'}">
         <div class="relative h-3 overflow-hidden rounded-full bg-brown" aria-hidden="true">
           <div id="meterLevel" class="h-full w-0 rounded-full bg-sand transition-[width] duration-75"></div>
           <div id="meterThr" class="absolute top-0 h-full w-1 rounded bg-haldi" style="left:0"></div>
@@ -616,42 +864,85 @@ function listen() {
       <div id="log" class="mt-2">${logList(s.log)}</div>
     </section>
 
-    <div class="fixed inset-x-0 bottom-0 z-20 bg-brown/95 px-4 pt-3 backdrop-blur" style="padding-bottom:max(.75rem,env(safe-area-inset-bottom))">
+    ${multi ? '' : `<div class="fixed inset-x-0 bottom-0 z-20 bg-brown/95 px-4 pt-3 backdrop-blur" style="padding-bottom:max(.75rem,env(safe-area-inset-bottom))">
       <div class="mx-auto flex max-w-md gap-3">
         <button data-minus class="tap flex min-h-16 flex-col items-center justify-center rounded-full bg-brown-2 px-6" aria-label="Remove one whistle">
           <span class="text-[22px] font-extrabold leading-none">−1</span><span class="text-[13px] font-semibold text-sand">mistake</span>
         </button>
         <button data-plus class="tap flex min-h-16 flex-1 items-center justify-center rounded-full bg-cream text-[22px] font-extrabold text-brown shadow-md" aria-label="Add one whistle">+1 whistle</button>
       </div>
-    </div>
+    </div>`}
   </main>`;
 }
 
 bind.listen = () => {
   const s = state.session;
   if (s.error) {
-    $('[data-back]').addEventListener('click', () => { stopListening(); go('home', { back: true }); });
-    $('[data-retry]').addEventListener('click', () => startSession(s.target));
+    $('[data-back]').addEventListener('click', () => { endSession(); go('home', { back: true }); });
+    $('[data-retry]').addEventListener('click', () => startSession(s.cookers[0].target));
     $('[data-manual]').addEventListener('click', () => { s.error = null; s.phase = 'manual'; render(); keepAwake(true); });
     return;
   }
   $('[data-stop]').addEventListener('click', async () => {
     tick();
-    if (s.count > 0 && !(await confirmSheet({ title: 'Stop counting?', text: `${s.count} of ${s.target} whistles counted. The count will be lost.`, yes: 'Yes, stop', no: 'Keep counting', danger: true }))) return;
-    stopListening();
-    keepAwake(false);
+    const counted = s.cookers.reduce((a, c) => a + c.count, 0);
+    const unfinished = openCookers().length;
+    if (counted > 0 && unfinished && !(await confirmSheet({ title: 'Stop counting?', text: 'The whistles counted so far will be lost.', yes: 'Yes, stop', no: 'Keep counting', danger: true }))) return;
+    endSession();
     go('home', { back: true });
   });
-  $('[data-plus]').addEventListener('click', () => { detector?.pauseFor(6); countWhistle('manual'); });
-  $('[data-minus]').addEventListener('click', () => {
-    if (!s.count) return snackbar('Nothing to remove yet');
-    undoWhistle();
-    snackbar(`Removed. Now ${s.count} of ${s.target}`);
+  const manualPlus = (i) => { detector?.pauseFor(6); s.lastWhistleAt = Date.now(); countWhistle(i, 'manual'); };
+  const manualMinus = (i) => {
+    const c = s.cookers[i];
+    if (!c.count) return snackbar('Nothing to remove yet');
+    undoWhistle(i);
+    snackbar(`Removed. ${isMulti() ? c.dish.name + ': ' : 'Now '}${c.count} of ${c.target}`);
+  };
+  $('[data-plus]')?.addEventListener('click', () => manualPlus(0));
+  $('[data-minus]')?.addEventListener('click', () => manualMinus(0));
+  $('#cards')?.addEventListener('click', (e) => {
+    const p = e.target.closest('[data-cplus]');
+    const m = e.target.closest('[data-cminus]');
+    if (p) manualPlus(Number(p.dataset.cplus));
+    if (m) manualMinus(Number(m.dataset.cminus));
   });
+  $('#unassigned')?.addEventListener('click', () => { tick(); askWhich('manual', new Date(), true); });
+  $('[data-add]')?.addEventListener('click', addCookerSheet);
+  renderCards();
   updateStatus();
   updateWakeNote();
-  meterLoop();
+  if (detector) meterLoop();
+  if (isMulti()) startReleaseTicker();
 };
+
+// Pick the second cooker's dish.
+function addCookerSheet() {
+  tick();
+  const el = document.createElement('div');
+  el.className = 'sheet-bg fixed inset-0 z-40 flex items-end justify-center bg-ink/40';
+  el.innerHTML = `<div class="sheet w-full max-w-md rounded-t-[32px] bg-paper px-6 pt-3 text-ink" role="dialog" aria-modal="true" aria-label="Add a second cooker" style="padding-bottom:max(1.5rem,env(safe-area-inset-bottom))">
+    <div class="mx-auto mb-4 h-1.5 w-12 rounded-full bg-sand"></div>
+    <h2 class="text-[22px] font-extrabold">What's in the second cooker?</h2>
+    <p class="mt-1 text-[16px] text-muted">When a whistle comes, Seeti will ask which cooker it was.</p>
+    <div class="mt-4 grid grid-cols-3 gap-3">
+      ${state.dishes.map((x) => `<button data-adddish="${x.id}" class="tap flex flex-col items-center gap-1 rounded-3xl p-3" style="background:${DISH_BG[x.id]}">
+        <span class="text-[36px] leading-none">${x.emoji}</span><span class="text-[16px] font-bold leading-tight">${x.id === 'custom' ? 'Other' : x.name}</span><span class="text-[14px] font-semibold text-ink-2">${x.count} whistles</span></button>`).join('')}
+    </div>
+    <button data-addcancel class="tap btn-soft mt-4 min-h-14 w-full rounded-full text-[18px] font-bold">Cancel</button>
+  </div>`;
+  document.body.appendChild(el);
+  const close = () => el.remove();
+  el.addEventListener('click', (e) => { if (e.target === el) close(); });
+  el.querySelector('[data-addcancel]').addEventListener('click', close);
+  el.querySelectorAll('[data-adddish]').forEach((b) => b.addEventListener('click', () => {
+    tick();
+    const d = state.dishes.find((x) => x.id === b.dataset.adddish);
+    state.session.cookers.push(newCooker(d, d.count));
+    close();
+    render();
+    snackbar(`${d.name} added. Seeti will ask which cooker whistled.`);
+  }));
+}
 
 const STATUS = {
   learning: 'Getting ready',
@@ -666,27 +957,31 @@ function updateStatus() {
   const el = $('#status');
   if (!el || !s) return;
   let text = STATUS[s.phase] || STATUS.listening;
-  if (s.phase === 'listening' && s.target - s.count === 1) text = 'Bas ek aur · one more';
+  if (!detector && s.phase !== 'manual') text = openCookers().length ? 'Mic off' : 'All whistles done';
+  const c0 = s.cookers[0];
+  if (!isMulti() && s.phase === 'listening' && c0.target - c0.count === 1) text = 'Bas ek aur · one more';
   el.textContent = text;
-  $('#dots')?.classList.toggle('hidden', ['cooldown', 'manual'].includes(s.phase));
+  $('#dots')?.classList.toggle('hidden', !detector || ['cooldown', 'manual'].includes(s.phase));
   $('#aiBadge')?.classList.toggle('hidden', state.aiStatus !== 'on');
   $('#liveCooker')?.classList.toggle('hearing', s.phase === 'hearing');
 }
 
 function updateCount(added = false) {
   const s = state.session;
+  if (isMulti()) { renderCards(); updateStatus(); return; }
+  const c = s.cookers[0];
   const svgText = $('#liveCooker .cooker-count');
   if (svgText) {
-    svgText.textContent = s.count;
+    svgText.textContent = c.count;
     const wrap = $('#cookerWrap');
     wrap?.classList.remove('pop');
     void wrap?.offsetWidth;
     wrap?.classList.add('pop');
   }
   const ct = $('#countText');
-  if (ct) ct.innerHTML = `<b class="text-cream">${s.count} of ${s.target}</b> whistles`;
+  if (ct) ct.innerHTML = `<b class="text-cream">${c.count} of ${c.target}</b> whistles`;
   const pg = $('#progress');
-  if (pg) pg.innerHTML = segProgress(s.count, s.target, added);
+  if (pg) pg.innerHTML = segProgress(c.count, c.target, added);
   updateStatus();
 }
 
@@ -718,55 +1013,61 @@ function meterLoop() {
     const note = $('#meterNote');
     if (note) {
       note.textContent = L.phase === 'learning' ? `Getting to know your kitchen… ${Math.round(L.learnProgress * 100)}%`
+        : L.deadFor > 5 ? "I can't hear anything"
         : L.phase === 'cooldown' ? `Listening again in ${Math.ceil(L.cooldownLeft)} sec`
         : L.hot ? 'Sounds like a whistle. Keep going…'
         : L.levelDb > L.baseline + 4 ? 'Some sound, not a whistle'
         : 'Quiet kitchen';
     }
-  } else if (state.session?.phase === 'manual') {
-    const note = $('#meterNote');
-    if (note) note.textContent = 'Mic is off. Counting by hand.';
   }
   meterRaf = requestAnimationFrame(meterLoop);
 }
 
 /* ----------------------------------------------------------------- ALARM */
-function showAlarm({ title, sub, kind, onStop }) {
+const alarmQueue = [];
+
+function queueAlarm(opts) {
+  if (document.querySelector('.alarm')) { alarmQueue.push(opts); return; }
+  showAlarm(opts);
+}
+
+function showAlarm({ title, sub, kind, dish, onStop }) {
   const lang = state.settings.lang;
+  const multi = state.session && isMulti();
   const overlay = document.createElement('div');
   overlay.className = 'alarm fixed inset-0 z-50 flex flex-col items-center justify-center px-6 text-center text-white';
   overlay.setAttribute('role', 'alertdialog');
-  overlay.setAttribute('aria-label', title.en);
+  overlay.setAttribute('aria-label', (multi ? dish + ': ' : '') + title.en);
   overlay.tabIndex = 0;
+  const c = state.session?.cookers.find((x) => x.dish.name === dish);
   overlay.innerHTML = `
     <span class="shake flex h-28 w-28 items-center justify-center rounded-full bg-white/20">${kind === 'gasOff' ? I.fire('h-16 w-16') : I.bell('h-16 w-16')}</span>
-    <h1 class="mt-6 text-[46px] font-extrabold leading-tight">${esc(title[lang] || title.en)}</h1>
+    ${multi ? `<p class="mt-6 rounded-full bg-white/20 px-5 py-2 text-[24px] font-extrabold">${esc(dish)}</p>` : ''}
+    <h1 class="mt-4 text-[46px] font-extrabold leading-tight">${esc(title[lang] || title.en)}</h1>
     ${lang !== 'en' ? `<p class="mt-2 text-[24px] font-bold">${esc(sub)}</p>` : ''}
-    <p class="mt-4 text-[19px] font-semibold">${esc(state.session?.dish.name || '')} · ${state.session?.count ?? ''} ${plural(state.session?.count ?? 0)}</p>
+    ${c ? `<p class="mt-4 text-[19px] font-semibold">${esc(c.dish.name)} · ${c.count} ${plural(c.count)}</p>` : ''}
     <button class="tap mt-10 min-h-16 rounded-full bg-white px-10 text-[22px] font-extrabold text-[#B3121C]">OK, done ✓</button>
     <p class="mt-3 text-[16px] font-semibold text-white/90">Tap anywhere to stop the sound</p>`;
   document.body.appendChild(overlay);
   overlay.focus();
-  startAlarm(lang, kind);
+  startAlarm(lang, kind, multi ? dish : '');
+  detector?.pauseFor(3600); // don't count the alarm's own beeps as a whistle
   let stopped = false;
   const stop = () => {
     if (stopped) return;
     stopped = true;
     stopAlarm();
+    detector?.pauseFor(2);
     overlay.remove();
     onStop?.();
+    const next = alarmQueue.shift();
+    if (next) showAlarm(next);
   };
   overlay.addEventListener('click', stop, { once: true });
   overlay.addEventListener('keydown', (e) => { if (['Escape', 'Enter', ' '].includes(e.key)) { e.preventDefault(); stop(); } });
 }
 
-/* --------------------------------------------------------------- RELEASE */
-function startRelease() {
-  state.session.releaseEnd = Date.now() + state.settings.releaseMin * 60_000;
-  keepAwake(true);
-  go('release');
-}
-
+/* --------------------------------------------------------------- RELEASE (one cooker) */
 function release() {
   return `
   <main class="flex min-h-dvh flex-col">
@@ -794,23 +1095,25 @@ function release() {
 }
 
 bind.release = () => {
-  const s = state.session;
-  const total = () => state.settings.releaseMin * 60_000 + (s.extraMs || 0);
+  const c = state.session.cookers[0];
+  const total = () => state.settings.releaseMin * 60_000 + (c.extraMs || 0);
   const tickClock = () => {
-    const left = Math.max(0, s.releaseEnd - Date.now());
+    const left = Math.max(0, c.releaseEnd - Date.now());
     const clock = $('#clock');
     if (!clock) return;
-    clock.textContent = `${String(Math.floor(left / 60000)).padStart(2, '0')}:${String(Math.floor((left % 60000) / 1000)).padStart(2, '0')}`;
+    clock.textContent = fmtLeft(left);
     $('#ring').setAttribute('stroke-dashoffset', String(100 - (left / total()) * 100));
     if (left <= 0) {
       clearInterval(releaseTimer);
       document.removeEventListener('visibilitychange', tickClock);
       if (document.querySelector('.alarm')) return;
+      c.released = true;
       showAlarm({
         title: { hi: 'Cooker khol sakte ho!', en: 'Safe to open now!', gu: 'કૂકર ખોલી શકો!' },
         sub: 'Safe to open now!',
         kind: 'released',
-        onStop: () => { keepAwake(false); go('done'); },
+        dish: c.dish.name,
+        onStop: () => { endSession(); go('done'); },
       });
     }
   };
@@ -818,20 +1121,23 @@ bind.release = () => {
   releaseTimer = setInterval(tickClock, 250);
   document.addEventListener('visibilitychange', tickClock);
   tickClock();
-  $('[data-addmin]').addEventListener('click', () => { tick(); s.releaseEnd += 60_000; s.extraMs = (s.extraMs || 0) + 60_000; tickClock(); snackbar('Added 1 minute'); });
-  $('[data-skip]').addEventListener('click', () => { tick(); clearInterval(releaseTimer); document.removeEventListener('visibilitychange', tickClock); keepAwake(false); go('done'); });
+  $('[data-addmin]').addEventListener('click', () => { tick(); c.releaseEnd += 60_000; c.extraMs = (c.extraMs || 0) + 60_000; tickClock(); snackbar('Added 1 minute'); });
+  $('[data-skip]').addEventListener('click', () => { tick(); clearInterval(releaseTimer); document.removeEventListener('visibilitychange', tickClock); endSession(); go('done'); });
 };
 
 /* ------------------------------------------------------------------ DONE */
 function done() {
   const s = state.session;
-  const mins = s.endedAt ? Math.max(1, Math.round((s.endedAt - s.startedAt) / 60000)) : null;
+  const lines = s.cookers.map((c) => {
+    const mins = c.finishedAt ? Math.max(1, Math.round((c.finishedAt - s.startedAt) / 60000)) : null;
+    return `${esc(c.dish.name)} · ${c.count} ${plural(c.count)}${mins ? ` · ${mins} min` : ''}`;
+  });
   return `
   <main class="flex min-h-dvh flex-col bg-brown text-cream">
-    <div class="overflow-hidden bg-[#FFD98E] pt-6">${cookerSVG({ count: s.count, scene: true, flame: false })}</div>
+    <div class="overflow-hidden bg-[#FFD98E] pt-6">${cookerSVG({ count: isMulti() ? null : s.cookers[0].count, scene: true, flame: false })}</div>
     <section class="relative -mt-8 flex flex-1 flex-col rounded-t-[32px] bg-brown px-5 pt-6" style="padding-bottom:max(1.25rem,env(safe-area-inset-bottom))">
       <h1 class="text-[32px] font-extrabold">Ho gaya! Khana tayyar.</h1>
-      <p class="mt-1 text-[18px] text-sand">${esc(s.dish.name)} · ${s.count} ${plural(s.count)}${mins ? ` · ${mins} min` : ''}</p>
+      ${lines.map((l) => `<p class="mt-1 text-[18px] text-sand">${l}</p>`).join('')}
       <div class="mt-5">${logList(s.log)}</div>
       <div class="mt-auto grid gap-3 pt-6">
         <button data-home class="tap min-h-14 rounded-full bg-cream text-[19px] font-extrabold text-brown">Done</button>
@@ -975,14 +1281,14 @@ document.addEventListener('visibilitychange', () => {
   } else if (hiddenAt) {
     mic.resume().catch(() => {});
     if (mic.stream.getAudioTracks().some((t) => t.readyState === 'ended')) addNote('The phone turned the mic off. Tap Stop and start again.');
-    if ((Date.now() - hiddenAt) / 1000 > 5) addNote(`Seeti was closed from ${fmtTime(hiddenAt)} to ${fmtTime(new Date())}. Please check the count.`);
+    if ((Date.now() - hiddenAt) / 1000 > 5) addNote(`Listening paused from ${fmtTime(hiddenAt)} to ${fmtTime(new Date())}. Please check the count.`);
     hiddenAt = null;
   }
 });
 
 window.addEventListener('beforeunload', (e) => {
   const s = state.session;
-  if (state.screen === 'listen' && s && !s.error && s.count < s.target) { e.preventDefault(); e.returnValue = ''; }
+  if (state.screen === 'listen' && s && !s.error && openCookers(s).length) { e.preventDefault(); e.returnValue = ''; }
 });
 
 /* ---------------------------------------------------------------- start */

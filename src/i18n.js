@@ -16,6 +16,8 @@ export const VOICE = {
     gasOff: 'गैस बंद करो',
     released: 'प्रेशर निकल गया। कुकर खोल सकते हो',
     hello: 'सीटी सुन रहा हूँ',
+    which: 'कौन सा कूकर',
+    noWhistle: 'अभी तक सीटी नहीं आई',
   },
   en: {
     count: (n) => `${EN_NUM[n] ?? n} ${n === 1 ? 'whistle' : 'whistles'}`,
@@ -23,6 +25,8 @@ export const VOICE = {
     gasOff: 'Turn off the gas',
     released: 'Pressure is released. You can open the cooker',
     hello: 'Listening for whistles',
+    which: 'Which cooker',
+    noWhistle: 'No whistle yet',
   },
   gu: {
     count: (n) => `${GU_NUM[n] ?? n} સીટી`,
@@ -30,6 +34,8 @@ export const VOICE = {
     gasOff: 'ગેસ બંધ કરો',
     released: 'પ્રેશર નીકળી ગયું. કૂકર ખોલી શકો છો',
     hello: 'સીટી સાંભળું છું',
+    which: 'કયું કૂકર',
+    noWhistle: 'હજુ સીટી નથી આવી',
   },
 };
 

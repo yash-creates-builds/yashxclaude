@@ -52,18 +52,22 @@ let alarmTimer = null;
 let alarmVoiceLine = null;
 
 /** Loud repeating alarm + strong vibration until stopAlarm(). */
-export function startAlarm(lang, kind = 'gasOff') {
+export function startAlarm(lang, kind = 'gasOff', prefix = '') {
   stopAlarm();
   if (outCtx?.state === 'suspended') outCtx.resume();
-  alarmVoiceLine = VOICE[lang]?.[kind] ?? VOICE.en[kind];
+  alarmVoiceLine = (prefix ? prefix + '. ' : '') + (VOICE[lang]?.[kind] ?? VOICE.en[kind]);
+  const started = Date.now();
   let round = 0;
   const loop = () => {
-    for (let i = 0; i < 3; i++) {
-      tone(1046, i * 0.42, 0.18, 0.7);
-      tone(1568, i * 0.42 + 0.2, 0.18, 0.7);
+    // Nobody came for 2 minutes? Get louder and speak every round.
+    const urgent = Date.now() - started > 120_000;
+    const vol = urgent ? 1 : 0.7;
+    for (let i = 0; i < (urgent ? 4 : 3); i++) {
+      tone(1046, i * 0.42, 0.18, vol);
+      tone(1568, i * 0.42 + 0.2, 0.18, vol);
     }
-    vibrate([500, 150, 500, 150, 500]);
-    if (round % 2 === 0) setTimeout(() => speak(alarmVoiceLine, lang), 1400);
+    vibrate(urgent ? [800, 100, 800, 100, 800] : [500, 150, 500, 150, 500]);
+    if (urgent || round % 2 === 0) setTimeout(() => speak(alarmVoiceLine, lang), 1400);
     round++;
   };
   loop();

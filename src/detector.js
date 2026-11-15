@@ -16,6 +16,8 @@ const SENSITIVITY = {
 };
 
 const FRAME_MS = 50;
+const MIN_DURATION_FLOOR = 0.5; // never count sounds shorter than this
+const QUIET_TO_REARM = 0.4;     // after a count, the sound must stop this long before the next can count
 const GAP_TOLERANCE = 0.25; // a whistle may flutter; allow short dips
 
 const median = (a) => {
@@ -33,10 +35,12 @@ export function buildParams(calib, sensitivity = 'normal') {
     p.band = calib.band;
     p.ratioMin = clamp(calib.ratio * 0.6, 0.2, 0.75);
     p.marginDb = clamp(calib.snrDb * 0.5, 6, 20);
+    // Short whistle? Lower the time check to ~60% of the learned length.
+    if (calib.durationSec) p.minDuration = clamp(calib.durationSec * 0.6, MIN_DURATION_FLOOR, DEFAULTS.minDuration);
   }
   p.ratioMin = clamp(p.ratioMin * s.ratio, 0.15, 0.9);
   p.marginDb *= s.margin;
-  p.minDuration *= s.dur;
+  p.minDuration = Math.max(MIN_DURATION_FLOOR, p.minDuration * s.dur);
   return p;
 }
 
@@ -52,7 +56,7 @@ export class WhistleDetector {
     this.onWhistle = onWhistle;
     this.onPhase = onPhase;
     this.read = makeFrameReader(mic);
-    this.live = { levelDb: -90, ratio: 0, baseline: -60, threshold: -50, ratioMin: params.ratioMin, progress: 0, hot: false, ai: 0, phase: 'learning', learnProgress: 0, cooldownLeft: 0 };
+    this.live = { levelDb: -90, ratio: 0, baseline: -60, threshold: -50, ratioMin: params.ratioMin, progress: 0, hot: false, ai: 0, phase: 'learning', learnProgress: 0, cooldownLeft: 0, deadFor: 0, loudFor: 0 };
     this.aiScore = 0;
     this.aiAt = 0;
     this.aiThreshold = 0.3;
@@ -67,6 +71,8 @@ export class WhistleDetector {
     this.activeStart = 0;
     this.lastHot = 0;
     this.cooldownUntil = 0;
+    this.needQuiet = false;
+    this.quietSince = 0;
     this.setPhase('learning');
     this.timer = setInterval(() => this.tick(), FRAME_MS);
   }
@@ -124,6 +130,11 @@ export class WhistleDetector {
     const hot = (loud && tonal) || aiHot;
     L.hot = hot;
 
+    // Health signals for the app: a silent mic, or a kitchen that never gets quiet.
+    const dt = FRAME_MS / 1000;
+    L.deadFor = f.levelDb < -85 ? L.deadFor + dt : 0;
+    L.loudFor = loud ? L.loudFor + dt : 0;
+
     // 2) Cooldown after a count.
     if (now < this.cooldownUntil) {
       L.cooldownLeft = (this.cooldownUntil - now) / 1000;
@@ -141,7 +152,15 @@ export class WhistleDetector {
     L.baseline = this.baseline;
     L.threshold = threshold;
 
-    // 4) Is it sustained?
+    // 4) After a count, wait for the sound to stop first (one long whistle = one count).
+    if (this.needQuiet) {
+      if (hot) { this.quietSince = 0; L.progress = 0; this.setPhase('listening'); return; }
+      if (!this.quietSince) this.quietSince = now;
+      if ((now - this.quietSince) / 1000 < QUIET_TO_REARM) { L.progress = 0; return; }
+      this.needQuiet = false;
+    }
+
+    // 5) Is it sustained?
     if (hot) {
       if (!this.active) { this.active = true; this.activeStart = now; }
       this.lastHot = now;
@@ -149,13 +168,16 @@ export class WhistleDetector {
       this.active = false;
     }
 
-    const dur = this.active ? (now - this.activeStart) / 1000 : 0;
+    // Length = first to last whistle-like frame (the short gap allowance doesn't add to it).
+    const dur = this.active ? (this.lastHot - this.activeStart) / 1000 : 0;
     L.progress = clamp(dur / p.minDuration, 0, 1);
     this.setPhase(this.active ? 'hearing' : 'listening');
 
     if (this.active && dur >= p.minDuration) {
       this.active = false;
       this.cooldownUntil = now + p.cooldown * 1000;
+      this.needQuiet = true;
+      this.quietSince = 0;
       L.progress = 0;
       this.setPhase('cooldown');
       this.onWhistle?.({ source: aiHot && !(loud && tonal) ? 'ai' : 'sound', at: new Date() });
@@ -166,6 +188,12 @@ export class WhistleDetector {
   pauseFor(seconds) {
     this.cooldownUntil = performance.now() + seconds * 1000;
     this.active = false;
+    this.needQuiet = true;
+    this.quietSince = 0;
+  }
+
+  setParams(params) {
+    this.params = params;
   }
 }
 
@@ -236,10 +264,10 @@ export function calibrate(mic, { onUpdate, onDone, onFail, timeoutSec = 90 }) {
     }
     const heardSec = (loudFrames.length * FRAME_MS) / 1000;
     onUpdate?.({ phase: isLoud ? 'hearing' : 'waiting', levelDb: f.levelDb, baseline, heardSec, peakHz: f.peakHz });
-    // A whistle that lasted ≥ 0.8s and then stopped for 0.7s → done.
-    if (heardSec >= 0.8 && now - lastLoud > 700) finish();
+    // A whistle that lasted ≥ 0.5s and then stopped for 0.7s → done.
+    if (heardSec >= MIN_DURATION_FLOOR && now - lastLoud > 700) finish();
     // Short blips (a spoon, a door) — forget them.
-    if (heardSec > 0 && heardSec < 0.8 && now - lastLoud > 700) loudFrames = [];
+    if (heardSec > 0 && heardSec < MIN_DURATION_FLOOR && now - lastLoud > 700) loudFrames = [];
     if (t > timeoutSec) { stopped = true; clearInterval(timer); onFail?.('timeout'); }
   }, FRAME_MS);
 
