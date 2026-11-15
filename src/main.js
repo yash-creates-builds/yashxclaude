@@ -1,8 +1,7 @@
-import '@fontsource/jost/300.css';
-import '@fontsource/jost/400.css';
-import '@fontsource/jost/500.css';
-import '@fontsource/dm-mono/400.css';
-import '@fontsource/dm-mono/500.css';
+import '@fontsource/plus-jakarta-sans/500.css';
+import '@fontsource/plus-jakarta-sans/600.css';
+import '@fontsource/plus-jakarta-sans/700.css';
+import '@fontsource/plus-jakarta-sans/800.css';
 import './style.css';
 
 import { getDishes, setDishCount, resetDishes, MIN_COUNT, MAX_COUNT } from './presets.js';
@@ -59,24 +58,36 @@ function go(screen) {
 /* ---------------------------------------------------------------- render */
 function render() {
   cancelAnimationFrame(meterRaf);
-  const views = { home, permission, listen, done, release, calibrate: calibrateView };
+  const views = { home, settings, permission, listen, done, release, calibrate: calibrateView };
   app.innerHTML = views[state.screen]();
   bind[state.screen]?.();
 }
 
 /* ----------------------------------------------------------------- pieces */
-function langPills() {
-  return `<div class="flex gap-1" role="radiogroup" aria-label="Voice language">
-    ${LANGS.map((l) => `<button data-lang="${l.id}" role="radio" aria-checked="${state.settings.lang === l.id}"
-      class="rounded-full border px-3 py-1 text-sm ${state.settings.lang === l.id ? 'border-ink bg-ink text-cream' : 'border-line text-muted'}">${l.label}</button>`).join('')}
+const DISH_BG = { dal: '#FFE08A', rice: '#CFE8F7', rajma: '#F9C4BC', chole: '#FAD3A5', aloo: '#D6EBC0', khichdi: '#E2D6F3', custom: '#F3EDE5' };
+
+// Segmented pill control (like an "Audio | Text" switch).
+function segmented(name, value, options, label) {
+  return `<div class="flex rounded-full bg-mist p-1" role="radiogroup" aria-label="${label}">
+    ${options.map(([v, l]) => `<button data-seg="${name}" data-val="${v}" role="radio" aria-checked="${value === v}"
+      class="flex-1 rounded-full px-3 py-2 text-sm font-semibold transition-colors ${value === v ? 'bg-brown text-cream shadow-sm' : 'text-muted'}">${l}</button>`).join('')}
   </div>`;
 }
 
 function toggle(name, on, label) {
   return `<button data-toggle="${name}" role="switch" aria-checked="${on}" aria-label="${label}"
-    class="relative h-7 w-12 shrink-0 rounded-full border-[1.5px] border-ink transition-colors ${on ? 'bg-ink' : 'bg-paper'}">
-    <span class="absolute top-[3px] h-[18px] w-[18px] rounded-full transition-all ${on ? 'left-[23px] bg-cream' : 'left-[3px] bg-ink'}"></span>
+    class="relative h-8 w-14 shrink-0 rounded-full transition-colors ${on ? 'bg-leaf' : 'bg-sand'}">
+    <span class="absolute top-1 h-6 w-6 rounded-full bg-white shadow transition-all ${on ? 'left-7' : 'left-1'}"></span>
   </button>`;
+}
+
+// Grey square − / value / + control.
+function stepper(attr, value, unit, labelLess, labelMore) {
+  return `<div class="flex items-center gap-3">
+    <button ${attr}="-1" class="btn-line h-12 w-12 rounded-xl text-2xl font-semibold" aria-label="${labelLess}">−</button>
+    <div class="flex h-12 min-w-16 flex-1 items-center justify-center rounded-xl bg-mist px-3 text-xl font-extrabold">${value}<span class="ml-1 text-sm font-semibold text-muted">${unit}</span></div>
+    <button ${attr}="1" class="btn-line h-12 w-12 rounded-xl text-2xl font-semibold" aria-label="${labelMore}">+</button>
+  </div>`;
 }
 
 function gauge(count, target) {
@@ -84,162 +95,132 @@ function gauge(count, target) {
   return `<div class="bar" aria-hidden="true"><div style="width:${pct}%"></div></div>`;
 }
 
-function section(num, title, body, extra = '') {
-  return `<section class="mt-8 border-t border-line pt-4">
-    <div class="flex items-baseline justify-between"><h2 class="label">${num} — ${title}</h2>${extra}</div>
-    ${body}
-  </section>`;
-}
-
-function logList(log) {
-  if (!log.length) return `<p class="py-2 font-mono text-xs text-muted">No whistles yet.</p>`;
-  return `<ol class="divide-y divide-line">
+function logList(log, dark = false) {
+  const sub = dark ? 'text-sand/80' : 'text-muted';
+  if (!log.length) return `<p class="py-2 text-sm ${sub}">No whistles yet.</p>`;
+  return `<ol class="divide-y ${dark ? 'divide-brown-2' : 'divide-line'}">
     ${log.map((e) => e.type === 'note'
-      ? `<li class="py-2 font-mono text-xs text-muted">${esc(e.text)}</li>`
+      ? `<li class="py-2 text-sm ${sub}">${esc(e.text)}</li>`
       : `<li class="flex items-center justify-between py-2.5">
-          <span class="text-lg">${ordinal(e.n)} seeti</span>
-          <span class="font-mono text-xs text-muted">${fmtTime(e.time)} · ${e.source === 'manual' ? 'manual' : e.source === 'ai' ? 'AI' : 'heard'}</span>
+          <span class="font-bold">${ordinal(e.n)} seeti</span>
+          <span class="text-sm ${sub}">${fmtTime(e.time)} · ${e.source === 'manual' ? 'manual' : e.source === 'ai' ? 'AI' : 'heard'}</span>
         </li>`).join('')}
   </ol>`;
 }
 
 /* ------------------------------------------------------------------- HOME */
-function settingRow({ title, what, right = '', below = '' }) {
-  return `<div class="py-4">
-    <div class="flex items-start justify-between gap-4">
-      <div><div class="text-lg leading-tight">${title}</div><p class="mt-1 text-sm leading-snug text-muted">${what}</p></div>
-      ${right}
-    </div>${below}
-  </div>`;
-}
-
 function home() {
   const d = selected();
   const st = state.settings;
-  const calibBadge = state.calib
-    ? `<span class="font-mono text-[11px] text-ink">✓ Learned · ${(state.calib.peakHz / 1000).toFixed(1)} kHz</span>`
-    : `<span class="font-mono text-[11px] text-muted">Not done yet</span>`;
+  const langLabel = LANGS.find((l) => l.id === st.lang)?.label;
+  const chip = (text) => `<button data-go-settings class="rounded-full bg-mist px-4 py-2 text-sm font-semibold text-ink-2">${text}</button>`;
   return `
-  <main class="fade-in px-5 pb-40 pt-[max(1.25rem,env(safe-area-inset-top))]">
-    <header class="flex items-center justify-between">
-      <span class="label">Voice</span>
-      ${langPills()}
+  <main class="fade-in relative overflow-hidden px-5 pb-36 pt-[max(1.5rem,env(safe-area-inset-top))]">
+    <div class="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-leaf" aria-hidden="true"></div>
+    <header class="relative flex items-start justify-between">
+      <div>
+        <h1 class="text-[44px] font-extrabold leading-none tracking-tight">Seeti</h1>
+        <p class="mt-2 font-semibold text-muted">Cooker ki seeti, hum ginenge.</p>
+      </div>
+      <button data-go-settings class="mt-1 flex h-14 w-14 items-center justify-center rounded-full bg-white text-ink shadow-md" aria-label="Settings">${ICONS.gear}</button>
     </header>
 
     <section class="mt-8">
-      <h1 class="text-[64px] font-light leading-none tracking-tight">सीटी</h1>
-      <p class="label mt-3 !text-ink">Seeti · Whistle counter</p>
-      <p class="mt-4 text-lg text-muted">Cooker ki seeti, hum ginenge.</p>
-      <div class="mt-5 h-px w-10 bg-ink"></div>
+      <h2 class="text-lg font-extrabold">What are you cooking?</h2>
+      <div class="no-scrollbar -mx-5 mt-2 flex snap-x scroll-px-5 gap-4 overflow-x-auto px-5 pb-2 pt-2" role="radiogroup" aria-label="Dish">
+        ${state.dishes.map((x) => `
+          <button class="dish w-32 shrink-0 snap-start text-left" data-dish="${x.id}" role="radio" aria-pressed="${x.id === d.id}" aria-checked="${x.id === d.id}">
+            <span class="dish-art relative flex aspect-square items-center justify-center overflow-hidden rounded-3xl" style="background:${DISH_BG[x.id]}">
+              <span class="absolute -bottom-6 -right-6 h-20 w-20 rounded-full bg-white/35"></span>
+              <span class="relative text-6xl leading-none">${x.emoji}</span>
+            </span>
+            <span class="mt-2 block font-bold leading-tight">${x.name}</span>
+            <span class="block text-xs font-semibold text-muted">${x.count} whistles${x.edited ? ' · edited' : ''}</span>
+          </button>`).join('')}
+      </div>
     </section>
 
-    <div class="screen-frame mt-7">
-      <div class="flex items-start justify-between px-4 pt-3">
-        <div class="w-32"><span class="label !text-[10px] !text-ink">Whistles</span><div class="mt-1.5">${gauge(0, d.count)}</div><span class="font-mono text-[11px]">0%</span></div>
-        <span class="font-mono text-sm"><span class="mono-emoji">${d.emoji}</span> × ${d.count}</span>
+    <section class="mt-6 rounded-3xl bg-white p-5 shadow-sm">
+      <div class="flex items-baseline justify-between">
+        <h2 class="text-lg font-extrabold">How many whistles?</h2>
+        <span class="label">for ${esc(d.name)}</span>
       </div>
-      ${cookerSVG({ scene: true, id: 'heroCooker' })}
+      <div class="mt-4">${stepper('data-step', d.count, '', 'One less whistle', 'One more whistle')}</div>
+      <p class="mt-3 text-sm text-muted">Seeti remembers this for next time.</p>
+    </section>
+
+    <div class="mt-5 flex flex-wrap gap-2">
+      ${chip(`Voice · ${langLabel}`)}
+      ${chip(st.releaseOn ? `Safe-to-open · ${st.releaseMin} min` : 'Safe-to-open · off')}
+      ${chip(state.calib ? 'Cooker learned ✓' : 'Learn my cooker')}
     </div>
 
-    <div class="mt-6 grid grid-cols-[1fr_auto_1fr_auto_1fr] items-center text-center">
-      ${[['listen', 'Suno', 'Listens'], ['count', 'Gino', 'Counts'], ['alert', 'Gas band', 'Alerts']].map(([k, t, s], i) => `
-        ${i ? '<span class="font-mono text-muted" aria-hidden="true">→</span>' : ''}
-        <div class="flex flex-col items-center gap-1">${ICONS[k]}<span class="text-sm">${t}</span><span class="label !text-[9px]">${s}</span></div>`).join('')}
-    </div>
-
-    ${section('01', 'Kya bana rahe ho?', `
-      <div class="mt-3 grid grid-cols-3 gap-2" role="radiogroup" aria-label="Dish">
-        ${state.dishes.map((x) => `
-          <button class="tile flex flex-col items-center justify-center rounded-xl border border-line bg-paper py-4 ${x.id === 'custom' ? 'col-span-3 !flex-row gap-3 !py-3' : ''}"
-            data-dish="${x.id}" role="radio" aria-pressed="${x.id === d.id}" aria-checked="${x.id === d.id}">
-            <span class="mono-emoji text-3xl leading-none">${x.emoji}</span>
-            <span class="mt-1.5 text-base leading-tight">${x.name}</span>
-            <span class="tile-sub font-mono text-[11px] text-muted">${x.count} seeti${x.edited ? ' ✎' : ''}</span>
-          </button>`).join('')}
-      </div>`, '<span class="label">Dish</span>')}
-
-    ${section('02', 'Kitni seeti?', `
-      <div class="mt-3 flex items-center justify-between">
-        <button data-step="-1" class="btn-line h-14 w-14 rounded-full text-3xl font-light" aria-label="One less whistle">−</button>
-        <div class="text-center">
-          <div class="text-7xl font-light leading-none">${d.count}</div>
-          <div class="label mt-1">whistles for ${esc(d.name)}</div>
-        </div>
-        <button data-step="1" class="btn-primary h-14 w-14 rounded-full text-3xl font-light" aria-label="One more whistle">+</button>
-      </div>
-      <p class="mt-3 text-center text-sm text-muted">Change it once — Seeti remembers it for next time.</p>`)}
-
-    ${section('03', 'Settings', `
-      <div class="divide-y divide-line">
-        ${settingRow({
-          title: "Learn my cooker's whistle",
-          what: 'Optional, 1 minute. Seeti listens to one real whistle from <b>your</b> cooker and remembers its sound — so it counts more accurately and ignores other noises.',
-          right: `<button data-go="calibrate" class="btn-line shrink-0 rounded-full px-4 py-1.5 text-sm">${state.calib ? 'Redo' : 'Start'}</button>`,
-          below: `<div class="mt-2">${calibBadge}</div>`,
-        })}
-        ${settingRow({
-          title: 'Safe-to-open timer',
-          what: `After the last whistle and gas off, steam is still inside — opening early is dangerous. Seeti counts down <b>${st.releaseMin} min</b> and tells you when it's safe to open the lid.`,
-          right: toggle('releaseOn', st.releaseOn, 'Safe-to-open timer'),
-          below: `<div class="mt-3 flex items-center gap-3 ${st.releaseOn ? '' : 'opacity-30'}">
-            <button data-rel="-1" class="btn-line h-8 w-8 rounded-full" aria-label="Less time">−</button>
-            <span class="w-14 text-center font-mono text-sm">${st.releaseMin} min</span>
-            <button data-rel="1" class="btn-line h-8 w-8 rounded-full" aria-label="More time">+</button>
-          </div>`,
-        })}
-        ${settingRow({
-          title: 'AI listening',
-          what: 'A free sound-recognition model that also checks if a sound is a whistle. Downloads ~15 MB once, runs on your phone.',
-          right: toggle('ai', st.ai, 'AI listening'),
-        })}
-        ${settingRow({
-          title: 'Sensitivity',
-          what: 'Low = noisy kitchen (fewer false counts). High = phone is far from the cooker.',
-          below: `<div class="mt-3 flex flex-wrap gap-2" role="radiogroup" aria-label="Sensitivity">
-            ${[['low', 'Low'], ['normal', 'Normal'], ['high', 'High']].map(([v, l]) => `
-              <button data-sens="${v}" role="radio" aria-checked="${st.sens === v}"
-                class="rounded-full border px-4 py-1 text-sm ${st.sens === v ? 'border-ink bg-ink text-cream' : 'border-sand text-muted'}">${l}</button>`).join('')}
-          </div>`,
-        })}
-      </div>
-      <button data-reset class="mt-2 font-mono text-[11px] text-muted underline">Reset dish counts</button>`)}
-
-    <div class="fixed inset-x-0 bottom-0 z-10 border-t border-line bg-cream/95 px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur">
+    <div class="fixed inset-x-0 bottom-0 z-10 bg-gradient-to-t from-cream via-cream to-cream/0 px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-6">
       <div class="mx-auto max-w-md">
-        <button data-start class="btn-primary flex w-full items-center justify-between rounded-xl px-5 py-4">
-          <span class="text-xl">Start listening</span>
-          <span class="font-mono text-xs tracking-widest text-sand">${esc(d.name.toUpperCase())} · ${d.count} SEETI →</span>
+        <button data-start class="btn-primary flex w-full items-center gap-4 rounded-full p-2 pr-6 shadow-lg">
+          <span class="flex h-14 w-14 items-center justify-center rounded-full bg-cream text-brown">${ICONS.ear}</span>
+          <span class="flex-1 text-left"><span class="block text-lg font-extrabold leading-tight">Start listening</span>
+          <span class="block text-sm font-semibold text-sand">${esc(d.name)} · ${d.count} whistles</span></span>
+          <span class="text-2xl" aria-hidden="true">→</span>
         </button>
       </div>
     </div>
   </main>`;
 }
 
-bind.home = () => {
-  $$('[data-lang]').forEach((b) => b.addEventListener('click', () => {
-    state.settings.lang = b.dataset.lang;
+/* --------------------------------------------------------------- SETTINGS */
+function settingCard(title, what, control, below = '') {
+  return `<section class="rounded-3xl bg-white p-5 shadow-sm">
+    <div class="flex items-start justify-between gap-4">
+      <div><h2 class="text-lg font-extrabold leading-tight">${title}</h2><p class="mt-1 text-sm leading-relaxed text-muted">${what}</p></div>
+      ${control}
+    </div>${below}
+  </section>`;
+}
+
+function settings() {
+  const st = state.settings;
+  return `
+  <main class="fade-in px-5 pb-10 pt-[max(1.25rem,env(safe-area-inset-top))]">
+    <header class="flex items-center gap-3">
+      <button data-home class="flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-sm" aria-label="Back">${ICONS.back}</button>
+      <h1 class="text-2xl font-extrabold">Settings</h1>
+    </header>
+    <div class="mt-6 space-y-4">
+      ${settingCard('Voice language', 'Seeti says the count out loud: “Ek seeti!”, “Two whistles!”…', '',
+        `<div class="mt-4">${segmented('lang', st.lang, LANGS.map((l) => [l.id, l.label]), 'Voice language')}</div>`)}
+
+      ${settingCard("Learn my cooker's whistle",
+        'Optional, 1 minute. Seeti listens to one real whistle from your cooker and remembers its sound — so it counts more accurately.',
+        '',
+        `<div class="mt-4 flex items-center justify-between gap-3">
+          <span class="text-sm font-semibold ${state.calib ? 'text-leaf' : 'text-muted'}">${state.calib ? `✓ Learned (${(state.calib.peakHz / 1000).toFixed(1)} kHz)` : 'Not done yet'}</span>
+          <button data-go="calibrate" class="btn-primary rounded-full px-5 py-2.5 text-sm font-bold">${state.calib ? 'Redo' : 'Start'}</button>
+        </div>`)}
+
+      ${settingCard('Safe-to-open timer',
+        "After the gas is off, steam is still inside. Opening early is dangerous — Seeti counts down and tells you when it's safe to open the lid.",
+        toggle('releaseOn', st.releaseOn, 'Safe-to-open timer'),
+        `<div class="mt-4 ${st.releaseOn ? '' : 'pointer-events-none opacity-40'}">${stepper('data-rel', st.releaseMin, 'min', 'Less time', 'More time')}</div>`)}
+
+      ${settingCard('Sensitivity', 'Low for a noisy kitchen. High if the phone is far from the cooker.', '',
+        `<div class="mt-4">${segmented('sens', st.sens, [['low', 'Low'], ['normal', 'Normal'], ['high', 'High']], 'Sensitivity')}</div>`)}
+
+      ${settingCard('AI listening', 'A free sound-recognition model double-checks each whistle. Downloads ~15 MB once and runs on your phone.',
+        toggle('ai', st.ai, 'AI listening'))}
+
+      <button data-reset class="w-full py-3 text-sm font-semibold text-muted underline">Reset dish counts to default</button>
+    </div>
+  </main>`;
+}
+
+bind.settings = () => {
+  $('[data-home]').addEventListener('click', () => go('home'));
+  $$('[data-seg]').forEach((b) => b.addEventListener('click', () => {
+    state.settings[b.dataset.seg] = b.dataset.val;
     saveSettings();
     render();
-    unlockAudio();
-    speak(VOICE[state.settings.lang].count(1), state.settings.lang);
-  }));
-  $$('[data-dish]').forEach((b) => b.addEventListener('click', () => {
-    state.selectedId = b.dataset.dish;
-    save('lastDish', state.selectedId);
-    render();
-  }));
-  $$('[data-step]').forEach((b) => b.addEventListener('click', () => {
-    const d = selected();
-    const n = Math.max(MIN_COUNT, Math.min(MAX_COUNT, d.count + Number(b.dataset.step)));
-    setDishCount(d.id, n);
-    state.dishes = getDishes();
-    render();
-  }));
-  $$('[data-rel]').forEach((b) => b.addEventListener('click', () => {
-    if (!state.settings.releaseOn) return;
-    state.settings.releaseMin = Math.max(1, Math.min(30, state.settings.releaseMin + Number(b.dataset.rel)));
-    saveSettings();
-    render();
+    if (b.dataset.seg === 'lang') { unlockAudio(); speak(VOICE[state.settings.lang].count(1), state.settings.lang); }
   }));
   $$('[data-toggle]').forEach((b) => b.addEventListener('click', () => {
     const k = b.dataset.toggle;
@@ -247,8 +228,8 @@ bind.home = () => {
     saveSettings();
     render();
   }));
-  $$('[data-sens]').forEach((b) => b.addEventListener('click', () => {
-    state.settings.sens = b.dataset.sens;
+  $$('[data-rel]').forEach((b) => b.addEventListener('click', () => {
+    state.settings.releaseMin = Math.max(1, Math.min(30, state.settings.releaseMin + Number(b.dataset.rel)));
     saveSettings();
     render();
   }));
@@ -259,6 +240,26 @@ bind.home = () => {
     render();
   });
   $('[data-go="calibrate"]').addEventListener('click', () => needMic(() => go('calibrate')));
+};
+
+bind.home = () => {
+  $$('[data-dish]').forEach((b) => b.addEventListener('click', () => {
+    state.selectedId = b.dataset.dish;
+    save('lastDish', state.selectedId);
+    const y = $('[role="radiogroup"]').scrollLeft;
+    render();
+    $('[role="radiogroup"]').scrollLeft = y;
+  }));
+  $$('[data-step]').forEach((b) => b.addEventListener('click', () => {
+    const d = selected();
+    const n = Math.max(MIN_COUNT, Math.min(MAX_COUNT, d.count + Number(b.dataset.step)));
+    setDishCount(d.id, n);
+    state.dishes = getDishes();
+    const y = $('[role="radiogroup"]').scrollLeft;
+    render();
+    $('[role="radiogroup"]').scrollLeft = y;
+  }));
+  $$('[data-go-settings]').forEach((b) => b.addEventListener('click', () => go('settings')));
   $('[data-start]').addEventListener('click', () => {
     unlockAudio();
     needMic(startSession);
@@ -284,15 +285,15 @@ function permission() {
   <main class="fade-in flex min-h-dvh flex-col px-6 pb-8 pt-[max(1.5rem,env(safe-area-inset-top))]">
     <button data-back class="self-start font-mono text-sm text-muted">← Back</button>
     <div class="mx-auto mt-6 w-40">${cookerSVG({ flame: false })}</div>
-    <h1 class="mt-4 text-4xl font-light leading-tight">Seeti needs your ears… I mean, your mic.</h1>
+    <h1 class="mt-4 text-4xl font-extrabold leading-tight">Seeti needs your ears… I mean, your mic.</h1>
     <ul class="mt-6 space-y-3 text-lg">
-      <li class="flex gap-4 border-t border-line pt-3"><span class="label mt-1.5 !text-ink">01</span><span><b class="font-medium">Why?</b> To hear the cooker whistle and count it for you.</span></li>
-      <li class="flex gap-4 border-t border-line pt-3"><span class="label mt-1.5 !text-ink">02</span><span><b class="font-medium">Private.</b> Nothing is recorded, saved or uploaded. Sound is checked live, on your phone, then thrown away.</span></li>
-      <li class="flex gap-4 border-t border-line pt-3"><span class="label mt-1.5 !text-ink">03</span><span><b class="font-medium">Tip:</b> Keep Seeti open and the phone near the kitchen. Phones pause the mic when the screen locks — Seeti will try to keep it on.</span></li>
+      <li class="flex gap-3"><span class="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-mist text-sm font-bold">01</span><span><b class="font-bold">Why?</b> To hear the cooker whistle and count it for you.</span></li>
+      <li class="flex gap-3"><span class="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-mist text-sm font-bold">02</span><span><b class="font-bold">Private.</b> Nothing is recorded, saved or uploaded. Sound is checked live, on your phone, then thrown away.</span></li>
+      <li class="flex gap-3"><span class="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-mist text-sm font-bold">03</span><span><b class="font-bold">Tip:</b> Keep Seeti open and the phone near the kitchen. Phones pause the mic when the screen locks — Seeti will try to keep it on.</span></li>
     </ul>
     <p id="permErr" class="mt-4 hidden rounded-lg bg-mirch/10 p-3 text-mirch"></p>
     <div class="mt-auto pt-8">
-      <button data-allow class="btn-primary w-full rounded-xl py-4 text-2xl font-light">Allow microphone</button>
+      <button data-allow class="btn-primary w-full rounded-full py-4 text-2xl font-extrabold">Allow microphone</button>
     </div>
   </main>`;
 }
@@ -444,73 +445,71 @@ function listen() {
     return `
     <main class="fade-in flex min-h-dvh flex-col px-6 pb-8 pt-[max(1.5rem,env(safe-area-inset-top))]">
       <div class="mx-auto mt-8 w-40">${cookerSVG({ flame: false })}</div>
-      <h1 class="mt-6 text-3xl font-light">Arre! Mic nahi khula.</h1>
+      <h1 class="mt-6 text-3xl font-extrabold">Arre! Mic nahi khula.</h1>
       <p class="mt-3 text-lg">${esc(s.error)}</p>
       <p class="mt-3 text-muted">You can still count by hand with the +1 button.</p>
       <div class="mt-auto grid gap-3 pt-8">
-        <button data-retry class="btn-primary rounded-xl py-4 text-xl font-light">Try again</button>
+        <button data-retry class="btn-primary rounded-full py-4 text-xl font-extrabold">Try again</button>
         <button data-manual class="rounded-xl btn-line py-4 text-xl font-normal">Count by hand</button>
         <button data-stop class="py-3 font-mono text-sm text-muted">← Back home</button>
       </div>
     </main>`;
   }
-  const pct = Math.round((s.count / s.target) * 100);
   return `
-  <main class="fade-in flex min-h-dvh flex-col px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-[max(1rem,env(safe-area-inset-top))]">
-    <header class="flex items-center justify-between gap-2">
-      <span class="label !text-ink"><span class="mono-emoji">${esc(s.dish.emoji)}</span> ${esc(s.dish.name)}</span>
-      <span id="aiBadge"></span>
-    </header>
-
-    <div class="screen-frame mt-3">
-      <div class="flex items-start justify-between px-4 pt-3">
-        <div class="w-36">
-          <span class="label !text-[10px] !text-ink">Whistles</span>
-          <div id="gauge" class="mt-1.5">${gauge(s.count, s.target)}</div>
-          <span id="pctText" class="font-mono text-[11px]">${pct}%</span>
-        </div>
-        <div class="flex items-center gap-3">
-          <span id="countText" class="font-mono text-sm">${s.count} / ${s.target}</span>
-          <button data-stop class="flex h-9 w-9 items-center justify-center rounded-full border-[1.5px] border-ink" aria-label="Stop listening">
-            <svg viewBox="0 0 12 12" class="h-3 w-3"><rect x="1.5" y="1.5" width="9" height="9" rx="1" fill="currentColor"/></svg>
-          </button>
-        </div>
+  <main class="fade-in flex min-h-dvh flex-col bg-brown text-cream">
+    <div class="relative" style="background:#FFD98E">
+      <div class="absolute inset-x-0 top-0 z-10 flex items-center justify-between px-5 pt-[max(1rem,env(safe-area-inset-top))]">
+        <button data-stop class="flex items-center gap-2 rounded-full bg-white/85 px-4 py-2 text-sm font-bold text-ink shadow-sm backdrop-blur" aria-label="Stop listening">${ICONS.stop} Stop</button>
+        <span id="aiBadge"></span>
       </div>
-      <div id="cookerWrap">${cookerSVG({ count: s.count, target: s.target, scene: true, id: 'liveCooker' })}</div>
+      <div id="cookerWrap" class="mx-auto max-w-md pt-10">${cookerSVG({ count: s.count, target: s.target, scene: true, id: 'liveCooker' })}</div>
     </div>
 
-    <p id="status" class="mt-4 text-center text-2xl font-light" aria-live="polite"></p>
-    <div id="learnBar" class="mx-auto mt-2 w-40"><div class="bar !h-1.5"><div class="!w-0"></div></div></div>
-
-    <section class="mt-4 border-t border-line pt-3">
-      <div class="flex items-center justify-between"><span class="label">Sound</span><span id="meterNote" class="font-mono text-[11px] text-muted"></span></div>
-      <div class="relative mt-2 h-3 overflow-hidden rounded-full border-[1.5px] border-ink bg-paper" aria-hidden="true">
-        <div id="meterLevel" class="h-full w-0 bg-ink-3 transition-[width] duration-75"></div>
-        <div id="meterBase" class="absolute top-0 h-full w-px bg-ink" style="left:0"></div>
-        <div id="meterThr" class="absolute top-0 h-full w-0.5 bg-mirch" style="left:0"></div>
-      </div>
-      <div class="mt-2 grid grid-cols-[5rem_1fr] items-center gap-y-2" aria-hidden="true">
-        <span class="label !text-[9px]">Seeti tone</span>
-        <div class="relative h-1.5 overflow-hidden rounded-full bg-mist">
-          <div id="meterTone" class="h-full w-0 bg-ink"></div>
-          <div id="meterToneThr" class="absolute top-0 h-full w-0.5 bg-mirch" style="left:0"></div>
+    <section class="relative -mt-7 flex-1 rounded-t-[32px] bg-brown px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-6">
+      <div class="flex items-start justify-between gap-4">
+        <div class="min-w-0">
+          <h1 class="text-3xl font-extrabold leading-tight">${esc(s.dish.name)} <span class="text-2xl">${esc(s.dish.emoji)}</span></h1>
+          <p id="status" class="mt-1 font-semibold text-sand" aria-live="polite"></p>
         </div>
-        <span class="label !text-[9px]">Hold</span>
-        <div class="h-1.5 overflow-hidden rounded-full bg-mist"><div id="meterHold" class="h-full w-0 bg-haldi"></div></div>
+        <div class="relative h-16 w-16 shrink-0" aria-hidden="true">
+          <svg viewBox="0 0 64 64" class="absolute inset-0 -rotate-90">
+            <circle cx="32" cy="32" r="29" fill="none" stroke="var(--brown-2)" stroke-width="5"/>
+            <circle id="earRing" class="ear-ring" cx="32" cy="32" r="29" fill="none" stroke="var(--haldi)" stroke-width="5" stroke-linecap="round" pathLength="100" stroke-dasharray="100" stroke-dashoffset="100"/>
+          </svg>
+          <span id="earDot" class="absolute inset-2 rounded-full bg-cream/15 transition-transform duration-100"></span>
+          <span class="absolute inset-0 flex items-center justify-center text-cream">${ICONS.ear}</span>
+        </div>
       </div>
-    </section>
 
-    <section class="mt-5 grid grid-cols-[1fr_2fr] gap-3">
-      <button data-minus class="btn-line rounded-xl py-5 text-2xl font-light" aria-label="Remove one whistle">−1</button>
-      <button data-plus class="btn-primary rounded-xl py-5 text-2xl" aria-label="Add one whistle">+1 seeti</button>
-    </section>
+      <div id="learnBar" class="mt-3"><div class="bar !bg-brown-2"><div class="!bg-haldi" style="width:0"></div></div></div>
 
-    <section class="mt-6 border-t border-line pt-3">
-      <h2 class="label">Log</h2>
-      <div id="log" class="mt-1">${logList(s.log)}</div>
-    </section>
+      <div class="mt-5 grid grid-cols-3 divide-x divide-brown-2 border-y border-brown-2 py-3 text-center">
+        <div><div id="countText" class="text-xl font-extrabold">${s.count}/${s.target}</div><div class="text-xs font-semibold text-sand/80">Whistles</div></div>
+        <div><div class="text-xl font-extrabold">${fmtTime(s.startedAt)}</div><div class="text-xs font-semibold text-sand/80">Started</div></div>
+        <div><div id="nextText" class="text-xl font-extrabold">—</div><div class="text-xs font-semibold text-sand/80">Listening</div></div>
+      </div>
 
-    <p id="tip" class="mt-6 border-l-2 border-ink pl-3 text-sm text-muted">Keep Seeti open, phone near the kitchen. <span id="wakeNote"></span></p>
+      <div class="mt-4">
+        <div class="flex items-center justify-between text-xs font-semibold text-sand/80"><span>Sound</span><span id="meterNote"></span></div>
+        <div class="relative mt-1.5 h-2.5 overflow-hidden rounded-full bg-brown-2" aria-hidden="true">
+          <div id="meterLevel" class="h-full w-0 rounded-full bg-sand transition-[width] duration-75"></div>
+          <div id="meterThr" class="absolute top-0 h-full w-1 rounded bg-haldi" style="left:0"></div>
+        </div>
+        <p class="mt-1 text-[11px] text-sand/70">A whistle must cross the yellow mark for about 1 second.</p>
+      </div>
+
+      <div class="mt-5 grid grid-cols-[1fr_2fr] gap-3">
+        <button data-minus class="rounded-full bg-brown-2 py-4 text-xl font-extrabold" aria-label="Remove one whistle">−1</button>
+        <button data-plus class="rounded-full bg-cream py-4 text-xl font-extrabold text-brown" aria-label="Add one whistle">+1 seeti</button>
+      </div>
+
+      <div class="mt-6">
+        <h2 class="font-extrabold">Log</h2>
+        <div id="log" class="mt-1">${logList(s.log, true)}</div>
+      </div>
+
+      <p class="mt-5 rounded-2xl bg-brown-2 p-3 text-sm text-sand">Keep Seeti open, phone near the kitchen. <span id="wakeNote"></span></p>
+    </section>
   </main>`;
 }
 
@@ -554,7 +553,7 @@ function updateStatus() {
   if (s.phase === 'listening' && s.target - s.count === 1) text = 'Bas ek aur!';
   if (s.phase === 'listening' && !mic) text = 'Starting the mic…';
   el.textContent = text;
-  $('#learnBar')?.classList.toggle('invisible', s.phase !== 'learning');
+  $('#learnBar')?.classList.toggle('hidden', s.phase !== 'learning');
   $('#liveCooker')?.classList.toggle('hearing', s.phase === 'hearing');
 }
 
@@ -569,9 +568,7 @@ function updateCount() {
     wrap?.classList.add('pop');
   }
   const ct = $('#countText');
-  if (ct) ct.textContent = `${s.count} / ${s.target}`;
-  const pt = $('#pctText');
-  if (pt) pt.textContent = `${Math.round((s.count / s.target) * 100)}%`;
+  if (ct) ct.textContent = `${s.count}/${s.target}`;
   const g = $('#gauge');
   if (g) g.innerHTML = gauge(s.count, s.target);
   updateStatus();
@@ -579,7 +576,7 @@ function updateCount() {
 
 function renderLog() {
   const el = $('#log');
-  if (el && state.session) el.innerHTML = logList(state.session.log);
+  if (el && state.session) el.innerHTML = logList(state.session.log, state.screen === 'listen');
 }
 
 function updateAiBadge() {
@@ -587,12 +584,12 @@ function updateAiBadge() {
   if (!el) return;
   const map = {
     off: ['', ''],
-    loading: ['AI loading…', 'border-line text-muted'],
-    on: ['● AI listening', 'border-ink'],
-    error: ['AI off', 'border-line text-muted line-through'],
+    loading: ['AI loading…', 'bg-white/70 text-muted'],
+    on: ['● AI listening', 'bg-leaf text-white'],
+    error: ['AI off', 'bg-white/70 text-muted line-through'],
   };
   const [text, cls] = map[state.aiStatus];
-  el.className = text ? `whitespace-nowrap rounded-full border px-3 py-1 font-mono text-[10px] uppercase tracking-widest ${cls}` : '';
+  el.className = text ? `whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-bold shadow-sm ${cls}` : '';
   el.textContent = text;
   if (state.aiStatus === 'error') el.title = 'Could not load the AI model (offline?). Sound detection still works.';
 }
@@ -612,20 +609,20 @@ function meterLoop() {
   const L = detector?.live;
   if (L) {
     level.style.width = dbToPct(L.levelDb) + '%';
-    level.style.background = L.hot ? 'var(--ink)' : '';
-    $('#meterBase').style.left = dbToPct(L.baseline) + '%';
+    level.style.background = L.hot ? 'var(--haldi)' : '';
     $('#meterThr').style.left = dbToPct(L.threshold) + '%';
-    $('#meterTone').style.width = Math.round(L.ratio * 100) + '%';
-    $('#meterToneThr').style.left = Math.round((L.ratioMin ?? 0.45) * 100) + '%';
-    $('#meterHold').style.width = Math.round(L.progress * 100) + '%';
+    $('#earRing').setAttribute('stroke-dashoffset', String(100 - L.progress * 100));
+    const loud = Math.max(0, Math.min(1, (L.levelDb - L.baseline) / 25));
+    $('#earDot').style.transform = `scale(${0.6 + loud * 0.5})`;
     const lb = $('#learnBar .bar > div');
-    if (lb) lb.style.cssText = ''; if (lb) lb.style.width = Math.round(L.learnProgress * 100) + '%';
-    const note = $('#meterNote');
-    if (note) {
-      note.textContent = L.phase === 'cooldown'
-        ? `next in ${Math.ceil(L.cooldownLeft)}s`
-        : state.aiLabel && L.ai > 0.15 ? `AI: ${state.aiLabel} ${Math.round(L.ai * 100)}%` : `${Math.round(L.levelDb)} dB`;
+    if (lb) lb.style.width = Math.round(L.learnProgress * 100) + '%';
+    const next = $('#nextText');
+    if (next) {
+      next.textContent = L.phase === 'cooldown' ? `${Math.ceil(L.cooldownLeft)}s` : L.phase === 'learning' ? '…' : 'On';
+      next.nextElementSibling.textContent = L.phase === 'cooldown' ? 'Next in' : 'Listening';
     }
+    const note = $('#meterNote');
+    if (note) note.textContent = state.aiLabel && L.ai > 0.15 ? `AI: ${state.aiLabel} ${Math.round(L.ai * 100)}%` : `${Math.round(L.levelDb)} dB`;
   }
   meterRaf = requestAnimationFrame(meterLoop);
 }
@@ -640,11 +637,11 @@ function showAlarm({ big, title, sub, kind, onStop }) {
   overlay.tabIndex = 0;
   overlay.innerHTML = `
     <div class="shake text-[120px] leading-none">${big}</div>
-    <h1 class="mt-4 text-6xl font-light leading-none">${esc(title[lang] || title.en)}</h1>
+    <h1 class="mt-4 text-6xl font-extrabold leading-none">${esc(title[lang] || title.en)}</h1>
     ${lang !== 'en' ? `<p class="mt-3 text-2xl font-normal opacity-90">${esc(sub)}</p>` : ''}
-    <p class="mt-6 font-mono text-sm tracking-widest opacity-90">${esc(state.session?.dish.name.toUpperCase() || '')} · ${state.session?.count ?? ''} SEETI</p>
+    <p class="mt-6 text-sm font-bold tracking-wide opacity-90">${esc(state.session?.dish.name.toUpperCase() || '')} · ${state.session?.count ?? ''} SEETI</p>
     <button class="mt-12 rounded-full bg-cream px-10 py-4 text-2xl text-mirch">Ho gaya, band kiya ✓</button>
-    <p class="mt-4 label !text-cream/80">Tap anywhere to stop</p>`;
+    <p class="mt-4 text-sm font-semibold text-cream/80">Tap anywhere to stop</p>`;
   document.body.appendChild(overlay);
   overlay.focus();
   startAlarm(lang, kind);
@@ -673,15 +670,15 @@ function release() {
   return `
   <main class="fade-in flex min-h-dvh flex-col items-center px-6 pb-8 pt-[max(1.5rem,env(safe-area-inset-top))] text-center">
     <span class="label">Safe-to-open timer</span>
-    <h1 class="mt-3 text-3xl font-light">Pressure nikal raha hai…</h1>
+    <h1 class="mt-3 text-3xl font-extrabold">Pressure nikal raha hai…</h1>
     <p class="text-muted">Don't open the cooker yet.</p>
     <div class="relative mt-8 aspect-square w-64">
       <svg viewBox="0 0 100 100" class="h-full w-full -rotate-90">
-        <circle cx="50" cy="50" r="44" fill="none" stroke="var(--mist)" stroke-width="3"/>
-        <circle id="ring" cx="50" cy="50" r="44" fill="none" stroke="var(--ink)" stroke-width="3" stroke-linecap="round" pathLength="100" stroke-dasharray="100" stroke-dashoffset="0"/>
+        <circle cx="50" cy="50" r="44" fill="none" stroke="var(--mist)" stroke-width="7"/>
+        <circle id="ring" cx="50" cy="50" r="44" fill="none" stroke="var(--brown)" stroke-width="7" stroke-linecap="round" pathLength="100" stroke-dasharray="100" stroke-dashoffset="0"/>
       </svg>
       <div class="absolute inset-0 flex flex-col items-center justify-center">
-        <span id="clock" class="text-7xl font-light tabular-nums">--:--</span>
+        <span id="clock" class="text-6xl font-extrabold tabular-nums">--:--</span>
         <span class="label mt-1">remaining</span>
       </div>
     </div>
@@ -689,7 +686,7 @@ function release() {
       <button data-addmin class="rounded-xl btn-line py-4 text-xl font-normal">+1 min</button>
       <button data-skip class="rounded-xl border border-line py-4 text-xl font-normal">Skip</button>
     </div>
-    <p class="mt-6 rounded-lg border-l-2 border-ink !rounded-none bg-transparent p-3 text-sm">📱 Keep Seeti open on screen — phones may silence timers in the background.<br>Always check the cooker yourself before opening it.</p>
+    <p class="mt-6 rounded-lg bg-mist p-3 text-sm">📱 Keep Seeti open on screen — phones may silence timers in the background.<br>Always check the cooker yourself before opening it.</p>
   </main>`;
 }
 
@@ -732,12 +729,12 @@ function done() {
   return `
   <main class="fade-in flex min-h-dvh flex-col px-6 pb-8 pt-[max(1.5rem,env(safe-area-inset-top))]">
     <span class="label">Done</span>
-    <h1 class="mt-2 text-6xl font-light">Ho gaya!</h1>
+    <h1 class="mt-2 text-6xl font-extrabold">Ho gaya!</h1>
     <p class="mt-1 text-lg text-muted">${esc(s.dish.name)} · ${s.count} seeti${mins ? ` · ${mins} min` : ''}. Khana tayyar!</p>
     <div class="mx-auto mt-4 w-56">${cookerSVG({ count: s.count, flame: false })}</div>
     <section class="mt-4"><h2 class="label">Log</h2><div class="mt-1">${logList(s.log)}</div></section>
     <div class="mt-auto grid gap-3 pt-8">
-      <button data-again class="btn-primary rounded-xl py-4 text-xl font-light">Cook something else</button>
+      <button data-again class="btn-primary rounded-full py-4 text-xl font-extrabold">Cook something else</button>
     </div>
   </main>`;
 }
@@ -754,13 +751,13 @@ function calibrateView() {
   const body = {
     intro: `
       <ol class="mt-6 space-y-4 text-lg">
-        <li class="flex gap-3"><span class="label mt-1.5 !text-ink">01</span><span>Put your phone where it will be while cooking.</span></li>
-        <li class="flex gap-3"><span class="label mt-1.5 !text-ink">02</span><span>Tap <b>Start</b> and stay quiet for 3 seconds.</span></li>
-        <li class="flex gap-3"><span class="label mt-1.5 !text-ink">03</span><span>Wait for one real whistle. Seeti will learn how it sounds.</span></li>
+        <li class="flex gap-3"><span class="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-mist text-sm font-bold">01</span><span>Put your phone where it will be while cooking.</span></li>
+        <li class="flex gap-3"><span class="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-mist text-sm font-bold">02</span><span>Tap <b>Start</b> and stay quiet for 3 seconds.</span></li>
+        <li class="flex gap-3"><span class="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-mist text-sm font-bold">03</span><span>Wait for one real whistle. Seeti will learn how it sounds.</span></li>
       </ol>
-      ${state.calib ? `<p class="mt-6 rounded-lg border-l-2 border-ink !rounded-none bg-transparent p-3">Already tuned: ~${(state.calib.peakHz / 1000).toFixed(1)} kHz, ${Math.round(state.calib.snrDb)} dB above kitchen noise.</p>` : ''}
+      ${state.calib ? `<p class="mt-6 rounded-lg bg-mist p-3">Already tuned: ~${(state.calib.peakHz / 1000).toFixed(1)} kHz, ${Math.round(state.calib.snrDb)} dB above kitchen noise.</p>` : ''}
       <div class="mt-auto grid gap-3 pt-8">
-        <button data-cal-start class="btn-primary rounded-xl py-4 text-2xl font-light">Start</button>
+        <button data-cal-start class="btn-primary rounded-full py-4 text-2xl font-extrabold">Start</button>
         ${state.calib ? `<button data-cal-clear class="py-2 font-mono text-sm text-muted underline">Forget my cooker (use defaults)</button>` : ''}
       </div>`,
     run: `
@@ -774,23 +771,23 @@ function calibrateView() {
       </div>`,
     result: r ? `
       <div class="mx-auto mt-6 w-48">${cookerSVG({ flame: false })}</div>
-      <h2 class="mt-4 text-4xl font-light">Samajh gaya!</h2>
+      <h2 class="mt-4 text-4xl font-extrabold">Samajh gaya!</h2>
       <dl class="mt-4 grid grid-cols-2 gap-3">
-        <div class="rounded-lg border border-line bg-paper p-3"><dt class="label">Pitch</dt><dd class="text-3xl font-light">${(r.peakHz / 1000).toFixed(1)} kHz</dd></div>
-        <div class="rounded-lg border border-line bg-paper p-3"><dt class="label">Loudness</dt><dd class="text-3xl font-light">+${Math.round(r.snrDb)} dB</dd></div>
-        <div class="rounded-lg border border-line bg-paper p-3"><dt class="label">Band</dt><dd class="font-mono">${(r.band[0] / 1000).toFixed(1)}–${(r.band[1] / 1000).toFixed(1)} kHz</dd></div>
-        <div class="rounded-lg border border-line bg-paper p-3"><dt class="label">Length</dt><dd class="font-mono">${r.durationSec.toFixed(1)} s</dd></div>
+        <div class="rounded-2xl bg-white p-4 shadow-sm"><dt class="label">Pitch</dt><dd class="text-3xl font-extrabold">${(r.peakHz / 1000).toFixed(1)} kHz</dd></div>
+        <div class="rounded-2xl bg-white p-4 shadow-sm"><dt class="label">Loudness</dt><dd class="text-3xl font-extrabold">+${Math.round(r.snrDb)} dB</dd></div>
+        <div class="rounded-2xl bg-white p-4 shadow-sm"><dt class="label">Band</dt><dd class="font-mono">${(r.band[0] / 1000).toFixed(1)}–${(r.band[1] / 1000).toFixed(1)} kHz</dd></div>
+        <div class="rounded-2xl bg-white p-4 shadow-sm"><dt class="label">Length</dt><dd class="font-mono">${r.durationSec.toFixed(1)} s</dd></div>
       </dl>
       ${r.snrDb < 8 ? `<p class="mt-4 rounded-lg bg-mirch/10 p-3 text-mirch">That was quite soft. Move the phone a bit closer to the cooker for best results.</p>` : ''}
       <div class="mt-auto grid gap-3 pt-8">
-        <button data-cal-save class="btn-primary rounded-xl py-4 text-2xl font-light">Save</button>
+        <button data-cal-save class="btn-primary rounded-full py-4 text-2xl font-extrabold">Save</button>
         <button data-cal-start class="rounded-xl btn-line py-3 text-lg font-normal">Try again</button>
       </div>` : '',
     fail: `
-      <h2 class="mt-10 text-3xl font-light">Seeti suni nahi.</h2>
+      <h2 class="mt-10 text-3xl font-extrabold">Seeti suni nahi.</h2>
       <p class="mt-2 text-lg">${esc(cal.error || '')}</p>
       <div class="mt-auto grid gap-3 pt-8">
-        <button data-cal-start class="btn-primary rounded-xl py-4 text-2xl font-light">Try again</button>
+        <button data-cal-start class="btn-primary rounded-full py-4 text-2xl font-extrabold">Try again</button>
         <button data-cal-cancel class="py-2 font-mono text-sm text-muted">Back</button>
       </div>`,
   }[cal.step];
@@ -799,7 +796,7 @@ function calibrateView() {
   <main class="fade-in flex min-h-dvh flex-col px-6 pb-8 pt-[max(1.5rem,env(safe-area-inset-top))]">
     <button data-cal-back class="self-start font-mono text-sm text-muted">← Back</button>
     <span class="label mt-6">One-time setup · 1 min</span>
-    <h1 class="mt-1 text-4xl font-light leading-tight">Learn my cooker's whistle</h1>
+    <h1 class="mt-1 text-4xl font-extrabold leading-tight">Learn my cooker's whistle</h1>
     ${body}
   </main>`;
 }
@@ -812,7 +809,7 @@ function endCalMic() {
 }
 
 bind.calibrate = () => {
-  const back = () => { endCalMic(); cal.step = 'intro'; cal.result = null; keepAwake(false); go('home'); };
+  const back = () => { endCalMic(); cal.step = 'intro'; cal.result = null; keepAwake(false); go('settings'); };
   $('[data-cal-back]')?.addEventListener('click', back);
   $('[data-cal-cancel]')?.addEventListener('click', back);
   $('[data-cal-clear]')?.addEventListener('click', () => { remove('calib'); state.calib = null; render(); });
@@ -823,7 +820,7 @@ bind.calibrate = () => {
     cal.result = null;
     endCalMic();
     keepAwake(false);
-    go('home');
+    go('settings');
   });
   $$('[data-cal-start]').forEach((b) => b.addEventListener('click', async () => {
     unlockAudio();
