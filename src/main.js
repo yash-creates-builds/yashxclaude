@@ -301,6 +301,7 @@ function micErrorText(e) {
   if (!window.isSecureContext) return 'The mic only works on a secure (https://) link. Open Seeti from its https address.';
   if (e?.name === 'NotAllowedError') return 'Mic is blocked. Tap the 🔒 icon in the address bar (or phone Settings → Browser → Microphone) and allow it, then try again.';
   if (e?.name === 'NotFoundError') return 'No microphone found on this device.';
+  if (e?.name === 'NotReadableError') return 'Another app or tab may be using the mic (a call, voice note, recorder). Close it, then try again.';
   return `Could not open the mic: ${e?.message || e}`;
 }
 
@@ -348,6 +349,9 @@ async function startAiLayer() {
   } catch (e) {
     console.warn('AI layer unavailable', e);
     state.aiStatus = 'error';
+    addNote(navigator.onLine
+      ? '🤖 AI could not start on this phone. Normal listening still works.'
+      : '🤖 AI needs internet once to download (~15 MB). Normal listening still works.');
   }
   updateAiBadge();
 }
@@ -385,9 +389,10 @@ function countWhistle(source = 'sound', at = new Date()) {
 function undoWhistle() {
   const s = state.session;
   if (!s || s.count === 0) return;
+  for (let i = s.log.length - 1; i >= 0; i--) {
+    if (s.log[i].n === s.count) { s.log.splice(i, 1); break; }
+  }
   s.count -= 1;
-  const idx = s.log.map((e) => e.type).lastIndexOf(undefined);
-  if (idx >= 0) s.log.splice(idx, 1);
   vibrate(40);
   updateCount();
   renderLog();
@@ -614,12 +619,18 @@ function showAlarm({ big, title, sub, kind, onStop }) {
   document.body.appendChild(overlay);
   overlay.focus();
   startAlarm(lang, kind);
+  let stopped = false;
   const stop = () => {
+    if (stopped) return;
+    stopped = true;
     stopAlarm();
     overlay.remove();
     onStop?.();
   };
   overlay.addEventListener('click', stop, { once: true });
+  overlay.addEventListener('keydown', (e) => {
+    if (['Escape', 'Enter', ' '].includes(e.key)) { e.preventDefault(); stop(); }
+  });
 }
 
 /* --------------------------------------------------------------- RELEASE */
@@ -649,7 +660,7 @@ function release() {
       <button data-addmin class="rounded-3xl border-2 border-ink py-4 text-xl font-bold">+1 min</button>
       <button data-skip class="rounded-3xl border-2 border-ink/20 py-4 text-xl font-bold">Skip</button>
     </div>
-    <p class="mt-6 rounded-2xl bg-haldi-soft p-3 text-sm">📱 Keep Seeti open so the timer can ring.</p>
+    <p class="mt-6 rounded-2xl bg-haldi-soft p-3 text-sm">📱 Keep Seeti open on screen — phones may silence timers in the background.<br>Always check the cooker yourself before opening it.</p>
   </main>`;
 }
 
@@ -666,6 +677,8 @@ bind.release = () => {
     $('#ring').setAttribute('stroke-dashoffset', String(100 - (left / total()) * 100));
     if (left <= 0) {
       clearInterval(releaseTimer);
+      document.removeEventListener('visibilitychange', tick);
+      if (document.querySelector('.alarm')) return;
       showAlarm({
         big: '🍽️',
         title: { hi: 'Cooker khol sakte ho!', en: 'Open the cooker!', gu: 'કૂકર ખોલી શકો!' },
@@ -677,9 +690,10 @@ bind.release = () => {
   };
   clearInterval(releaseTimer);
   releaseTimer = setInterval(tick, 250);
+  document.addEventListener('visibilitychange', tick); // ring right away when the user comes back
   tick();
   $('[data-addmin]').addEventListener('click', () => { s.releaseEnd += 60_000; s.extraMs = (s.extraMs || 0) + 60_000; tick(); });
-  $('[data-skip]').addEventListener('click', () => { clearInterval(releaseTimer); keepAwake(false); go('done'); });
+  $('[data-skip]').addEventListener('click', () => { clearInterval(releaseTimer); document.removeEventListener('visibilitychange', tick); keepAwake(false); go('done'); });
 };
 
 /* ------------------------------------------------------------------ DONE */
@@ -726,7 +740,7 @@ function calibrateView() {
       <div class="mt-4 h-5 overflow-hidden rounded-full bg-tan"><div id="calLevel" class="h-full w-0 bg-ink-2 transition-[width] duration-75"></div></div>
       <p id="calNote" class="mt-2 text-center font-mono text-xs text-ink-2"></p>
       <div class="mt-auto grid gap-3 pt-8">
-        <button data-cal-now class="rounded-3xl border-2 border-ink py-4 text-xl font-bold">That was the whistle ✓</button>
+        <button data-cal-now disabled class="rounded-3xl border-2 border-ink py-4 text-xl font-bold disabled:opacity-30">That was the whistle ✓</button>
         <button data-cal-cancel class="py-2 font-mono text-sm text-ink-2">Cancel</button>
       </div>`,
     result: r ? `
@@ -803,6 +817,8 @@ bind.calibrate = () => {
         st.textContent = u.phase === 'learning' ? 'Shhh… learning the quiet 🤫'
           : u.phase === 'hearing' ? 'Sun raha hoon! Keep going… 👂' : 'Ready! Waiting for a whistle… ⏳';
         $('#calSvg')?.classList.toggle('hearing', u.phase === 'hearing');
+        const now = $('[data-cal-now]');
+        if (now) now.disabled = (u.heardSec || 0) < 0.5;
         $('#calLevel').style.width = dbToPct(u.levelDb) + '%';
         $('#calNote').textContent = u.phase === 'learning'
           ? `${Math.round(u.progress * 100)}%`
@@ -839,7 +855,10 @@ document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'hidden') {
     hiddenAt = new Date();
   } else if (hiddenAt) {
-    mic.resume();
+    mic.resume().catch(() => {});
+    if (mic.stream.getAudioTracks().some((t) => t.readyState === 'ended')) {
+      addNote('⚠️ The phone turned the mic off. Tap Stop and start again.');
+    }
     const gone = (Date.now() - hiddenAt) / 1000;
     if (gone > 5) addNote(`⚠️ Seeti was in the background ${fmtTime(hiddenAt)}–${fmtTime(new Date())}. Check the count.`);
     hiddenAt = null;
@@ -847,7 +866,8 @@ document.addEventListener('visibilitychange', () => {
 });
 
 window.addEventListener('beforeunload', (e) => {
-  if (state.screen === 'listen' && state.session?.count < state.session?.target) {
+  const s = state.session;
+  if (state.screen === 'listen' && s && !s.error && s.count < s.target) {
     e.preventDefault();
     e.returnValue = '';
   }
