@@ -1,55 +1,84 @@
 @import "tailwindcss";
 
-/* Familiar-app palette (WhatsApp-like greens + chat beige, YouTube-red progress)
-   with the warm turmeric kitchen illustration. All text colours meet WCAG AA contrast. */
+/* Visual language: warm storybook (cream page, white rounded cards, brown sheet,
+   leaf green + turmeric accents, bold friendly type). All text colours pass WCAG AA. */
 @theme {
-  --color-page: #F0F2F5;     /* app background (light grey, like WhatsApp lists) */
-  --color-card: #FFFFFF;
-  --color-chat: #EFEAE2;     /* chat wallpaper beige */
-  --color-bubble: #D9FDD3;   /* sent-message green bubble */
-  --color-ink: #111B21;      /* main text */
-  --color-ink-2: #3B4A54;    /* secondary text (7:1 on white) */
-  --color-line: #E1E5E8;
-  --color-green: #008069;    /* primary (header, buttons) */
-  --color-green-dark: #005C4B;
-  --color-green-soft: #E7F6F2;
-  --color-tick: #53BDEB;     /* blue double-tick */
-  --color-red: #E62117;      /* YouTube-style progress red */
+  --color-cream: #FFF8EF;
+  --color-paper: #FFFFFF;
+  --color-mist: #F3EDE5;    /* grey-beige squares, chips */
+  --color-sand: #E6D8C8;
+  --color-ink: #3B2314;     /* deep brown text */
+  --color-ink-2: #5B3A2A;
+  --color-muted: #6E5A4E;   /* secondary text, 5.9:1 on cream */
+  --color-line: #EADFD2;
+  --color-brown: #6B3A2A;   /* sheet + primary */
+  --color-brown-2: #84503D;
+  --color-brown-3: #A66B53;
   --color-haldi: #F5B700;
+  --color-leaf: #4E9A3E;
   --color-mirch: #E63946;
-  --font-display: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", "Noto Sans Devanagari", "Noto Sans Gujarati", sans-serif;
+  --font-display: "Plus Jakarta Sans", system-ui, "Noto Sans Devanagari", "Noto Sans Gujarati", sans-serif;
 }
 
 :root {
-  --page: #F0F2F5; --card: #FFFFFF; --chat: #EFEAE2; --bubble: #D9FDD3;
-  --ink: #111B21; --ink-2: #3B4A54; --line: #E1E5E8;
-  --green: #008069; --green-dark: #005C4B; --green-soft: #E7F6F2; --tick: #53BDEB;
-  --red: #E62117; --haldi: #F5B700; --mirch: #E63946;
-  /* illustration tokens */
-  --sand: #E6D8C8; --brown-3: #A66B53; --leaf: #5BAA4A;
+  --cream: #FFF8EF; --paper: #FFFFFF; --mist: #F3EDE5; --sand: #E6D8C8;
+  --ink: #3B2314; --ink-2: #5B3A2A; --muted: #6E5A4E; --line: #EADFD2;
+  --brown: #6B3A2A; --brown-2: #84503D; --brown-3: #A66B53;
+  --haldi: #F5B700; --leaf: #4E9A3E; --mirch: #E63946;
   color-scheme: light;
 }
 
-html { font-size: 18px; } /* bigger base text for easy reading */
-html, body { background: var(--page); color: var(--ink); }
-body {
-  font-family: var(--font-display);
-  line-height: 1.45;
-  -webkit-tap-highlight-color: transparent;
-  overscroll-behavior-y: none;
-}
-button { touch-action: manipulation; cursor: pointer; min-height: 48px; }
-button:focus-visible, [tabindex]:focus-visible { outline: 3px solid var(--tick); outline-offset: 2px; }
+html { font-size: 18px; }
+html, body { background: var(--cream); color: var(--ink); }
+body { font-family: var(--font-display); line-height: 1.45; -webkit-tap-highlight-color: transparent; overscroll-behavior-y: none; }
+button { touch-action: manipulation; cursor: pointer; }
+button:focus-visible, [tabindex]:focus-visible { outline: 3px solid var(--haldi); outline-offset: 3px; }
+
+/* Every tappable thing gives instant feedback (press-in), like native apps. */
+.tap { transition: transform .12s ease, background-color .15s, box-shadow .15s; }
+.tap:active { transform: scale(.96); }
+
+/* Screen changes slide in gently, so people keep their sense of place. */
+.screen-in { animation: screenin .22s cubic-bezier(.2,.8,.2,1); }
+.screen-back { animation: screenback .22s cubic-bezier(.2,.8,.2,1); }
+@keyframes screenin { from { opacity: 0; transform: translateX(18px); } to { opacity: 1; transform: none; } }
+@keyframes screenback { from { opacity: 0; transform: translateX(-18px); } to { opacity: 1; transform: none; } }
+
+/* "Listening…" dots, like a typing indicator. */
+.dots span { display: inline-block; width: 7px; height: 7px; margin: 0 1.5px; border-radius: 99px; background: currentColor; animation: dot 1.2s infinite ease-in-out; }
+.dots span:nth-child(2) { animation-delay: .15s; } .dots span:nth-child(3) { animation-delay: .3s; }
+@keyframes dot { 0%,60%,100% { opacity: .35; transform: translateY(0); } 30% { opacity: 1; transform: translateY(-4px); } }
+
+/* Segmented whistle progress (like chapter marks on a video bar). */
+.seg { height: 10px; border-radius: 99px; background: var(--brown-2); overflow: hidden; }
+.seg > i { display: block; height: 100%; background: var(--haldi); border-radius: 99px; transform-origin: left; }
+.seg.fill > i { animation: segfill .5s cubic-bezier(.2,.8,.2,1); }
+@keyframes segfill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+/* Log entries arrive with a little rise + tick. */
+.arrive { animation: arrive .35s cubic-bezier(.2,.8,.2,1); }
+@keyframes arrive { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+/* Snackbar (bottom message with an Undo action). */
+.snack { animation: snackin .25s cubic-bezier(.2,.8,.2,1); }
+@keyframes snackin { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+
+/* Bottom sheet dialog */
+.sheet-bg { animation: fadebg .2s ease-out; }
+.sheet { animation: sheetup .25s cubic-bezier(.2,.8,.2,1); }
+@keyframes fadebg { from { opacity: 0; } to { opacity: 1; } }
+@keyframes sheetup { from { transform: translateY(40px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+/* Dish cards */
+.dish[aria-checked="true"] .dish-art { box-shadow: 0 0 0 3px var(--cream), 0 0 0 6px var(--ink); }
 
 /* Cooker illustration */
 .cooker { width: 100%; height: auto; overflow: visible; display: block; }
-.cooker-count { font-family: var(--font-display); font-weight: 800; font-size: 96px; fill: var(--ink); }
-.cooker-target { font-family: var(--font-display); font-weight: 700; font-size: 18px; fill: var(--ink-2); }
+.cooker-count { font-family: var(--font-display); font-weight: 800; font-size: 92px; fill: var(--ink); }
+.cooker-target { font-family: var(--font-display); font-weight: 700; font-size: 17px; fill: var(--muted); }
 .cooker .puff { opacity: 0; transform-box: fill-box; transform-origin: center; }
 .cooker.whistling .puff { animation: puff 1.8s ease-out; }
-.cooker.whistling .p2 { animation-delay: .12s; }
-.cooker.whistling .p3 { animation-delay: .25s; }
-.cooker.whistling .p4 { animation-delay: .35s; }
+.cooker.whistling .p2 { animation-delay: .12s; } .cooker.whistling .p3 { animation-delay: .25s; } .cooker.whistling .p4 { animation-delay: .35s; }
 .cooker .whistle { transform-box: fill-box; transform-origin: 50% 100%; }
 .cooker.whistling .whistle, .cooker.hearing .whistle { animation: jiggle .12s linear infinite; }
 .cooker.whistling .whistle { animation-iteration-count: 10; }
@@ -64,29 +93,18 @@ button:focus-visible, [tabindex]:focus-visible { outline: 3px solid var(--tick);
 
 .pop { animation: pop .5s cubic-bezier(.3,1.6,.5,1); }
 @keyframes pop { 0% { transform: scale(.92); } 60% { transform: scale(1.04); } 100% { transform: scale(1); } }
+.ear-ring { transition: stroke-dashoffset .1s linear; }
 
-/* Live dot, like WhatsApp "online" / YouTube "LIVE" */
-.live-dot { width: 10px; height: 10px; border-radius: 99px; background: var(--red); animation: blink 1.4s ease-in-out infinite; }
-@keyframes blink { 50% { opacity: .3; } }
-
-/* Chat bubbles */
-.bubble { position: relative; background: var(--bubble); border-radius: 12px 0 12px 12px; box-shadow: 0 1px .5px rgba(11,20,26,.13); }
-.bubble::after { content: ""; position: absolute; top: 0; right: -8px; border-width: 0 0 10px 10px; border-style: solid; border-color: transparent transparent transparent var(--bubble); }
-.bubble-in { background: var(--card); border-radius: 0 12px 12px 12px; box-shadow: 0 1px .5px rgba(11,20,26,.13); }
-
-/* Alarm overlay */
+/* Alarm */
 .alarm { animation: alarmbg .9s steps(1) infinite; }
 @keyframes alarmbg { 0% { background: var(--mirch); } 50% { background: #B3121C; } }
 .shake { animation: shake .5s ease-in-out infinite; }
 @keyframes shake { 0%,100% { transform: rotate(0); } 25% { transform: rotate(-3deg); } 75% { transform: rotate(3deg); } }
 
-.btn-green { background: var(--green); color: #fff; }
-.btn-green:active { background: var(--green-dark); }
-.btn-soft { background: var(--green-soft); color: var(--green-dark); }
-.btn-soft:active { background: #CDEDE5; }
-
-.fade-in { animation: fadein .2s ease-out; }
-@keyframes fadein { from { opacity: 0; } to { opacity: 1; } }
+.btn-primary { background: var(--brown); color: var(--cream); }
+.btn-primary:active { background: var(--ink); }
+.btn-soft { background: var(--mist); color: var(--ink); }
+.btn-soft:active { background: var(--sand); }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition: none !important; }

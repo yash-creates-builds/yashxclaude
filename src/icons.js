@@ -20,4 +20,8 @@ export const I = {
   lock: (c) => svg('<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>', c),
   phone: (c) => svg('<rect x="6" y="2" width="12" height="20" rx="2"/><path d="M11 18h2"/>', c),
   fire: (c) => svg('<path d="M12 22c-4 0-7-3-7-7 0-4 3-6 4-10 2 2 3 4 3 6 1-1 2-2 2-4 3 3 5 6 5 8 0 4-3 7-7 7z"/>', c),
+  pot: (c) => svg('<path d="M4 10h16v6a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4zM2 10h20M9 10V7h6v3M12 4v3"/>', c),
+  history: (c) => svg('<path d="M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5M12 7v5l3 2"/>', c),
+  undo: (c) => svg('<path d="M9 14L4 9l5-5M4 9h10a6 6 0 0 1 0 12h-3"/>', c),
+  ear: (c) => svg('<path d="M7 9a5 5 0 0 1 10 0c0 3-3 4-3 7a3 3 0 0 1-5 2"/><path d="M10 10a2 2 0 0 1 4 0"/>', c),
 };
