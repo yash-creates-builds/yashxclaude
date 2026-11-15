@@ -1,54 +1,50 @@
 @import "tailwindcss";
 
-/* Warm, friendly palette: cream page, white cards, deep brown text,
-   a brown "bottom sheet", turmeric + leaf green accents, chilli for the alarm. */
+/* Familiar-app palette (WhatsApp-like greens + chat beige, YouTube-red progress)
+   with the warm turmeric kitchen illustration. All text colours meet WCAG AA contrast. */
 @theme {
-  --color-cream: #FFF8EF;
-  --color-paper: #FFFFFF;
-  --color-mist: #F3EDE5;   /* light chips, stepper squares */
-  --color-sand: #E6D8C8;
-  --color-ink: #3B2314;    /* deep brown text */
-  --color-ink-2: #5B3A2A;
-  --color-muted: #8C7A6E;
-  --color-line: #EFE5D8;
-  --color-brown: #6B3A2A;  /* sheet */
-  --color-brown-2: #84503D;/* chips on sheet */
-  --color-brown-3: #A66B53;
+  --color-page: #F0F2F5;     /* app background (light grey, like WhatsApp lists) */
+  --color-card: #FFFFFF;
+  --color-chat: #EFEAE2;     /* chat wallpaper beige */
+  --color-bubble: #D9FDD3;   /* sent-message green bubble */
+  --color-ink: #111B21;      /* main text */
+  --color-ink-2: #3B4A54;    /* secondary text (7:1 on white) */
+  --color-line: #E1E5E8;
+  --color-green: #008069;    /* primary (header, buttons) */
+  --color-green-dark: #005C4B;
+  --color-green-soft: #E7F6F2;
+  --color-tick: #53BDEB;     /* blue double-tick */
+  --color-red: #E62117;      /* YouTube-style progress red */
   --color-haldi: #F5B700;
-  --color-leaf: #5BAA4A;
   --color-mirch: #E63946;
-  --font-display: "Plus Jakarta Sans", system-ui, sans-serif;
-  --font-mono: "Plus Jakarta Sans", system-ui, sans-serif;
+  --font-display: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", "Noto Sans Devanagari", "Noto Sans Gujarati", sans-serif;
 }
 
 :root {
-  --cream: #FFF8EF; --paper: #FFFFFF; --mist: #F3EDE5; --sand: #E6D8C8;
-  --ink: #3B2314; --ink-2: #5B3A2A; --muted: #8C7A6E; --line: #EFE5D8;
-  --brown: #6B3A2A; --brown-2: #84503D; --brown-3: #A66B53;
-  --haldi: #F5B700; --leaf: #5BAA4A; --mirch: #E63946;
+  --page: #F0F2F5; --card: #FFFFFF; --chat: #EFEAE2; --bubble: #D9FDD3;
+  --ink: #111B21; --ink-2: #3B4A54; --line: #E1E5E8;
+  --green: #008069; --green-dark: #005C4B; --green-soft: #E7F6F2; --tick: #53BDEB;
+  --red: #E62117; --haldi: #F5B700; --mirch: #E63946;
+  /* illustration tokens */
+  --sand: #E6D8C8; --brown-3: #A66B53; --leaf: #5BAA4A;
   color-scheme: light;
 }
 
-html, body { background: var(--cream); color: var(--ink); }
+html { font-size: 18px; } /* bigger base text for easy reading */
+html, body { background: var(--page); color: var(--ink); }
 body {
   font-family: var(--font-display);
+  line-height: 1.45;
   -webkit-tap-highlight-color: transparent;
   overscroll-behavior-y: none;
 }
-button { touch-action: manipulation; cursor: pointer; }
-button:focus-visible, [tabindex]:focus-visible { outline: 3px solid var(--haldi); outline-offset: 3px; }
+button { touch-action: manipulation; cursor: pointer; min-height: 48px; }
+button:focus-visible, [tabindex]:focus-visible { outline: 3px solid var(--tick); outline-offset: 2px; }
 
-.label { font-size: 13px; font-weight: 600; color: var(--muted); }
-.no-scrollbar { scrollbar-width: none; }
-.no-scrollbar::-webkit-scrollbar { display: none; }
-
-.bar { height: 8px; border-radius: 99px; background: var(--mist); overflow: hidden; }
-.bar > div { height: 100%; background: var(--ink); border-radius: 99px; transition: width .4s; }
-
-/* Cooker */
+/* Cooker illustration */
 .cooker { width: 100%; height: auto; overflow: visible; display: block; }
-.cooker-count { font-family: "Plus Jakarta Sans", sans-serif; font-weight: 800; font-size: 80px; fill: var(--ink); }
-.cooker-target { font-family: "Plus Jakarta Sans", sans-serif; font-weight: 700; font-size: 14px; fill: var(--muted); }
+.cooker-count { font-family: var(--font-display); font-weight: 800; font-size: 96px; fill: var(--ink); }
+.cooker-target { font-family: var(--font-display); font-weight: 700; font-size: 18px; fill: var(--ink-2); }
 .cooker .puff { opacity: 0; transform-box: fill-box; transform-origin: center; }
 .cooker.whistling .puff { animation: puff 1.8s ease-out; }
 .cooker.whistling .p2 { animation-delay: .12s; }
@@ -61,11 +57,7 @@ button:focus-visible, [tabindex]:focus-visible { outline: 3px solid var(--haldi)
 .cooker .f1 { animation-delay: .2s; } .cooker .f2 { animation-delay: .45s; } .cooker .f3 { animation-delay: .7s; }
 .cooker .flames.off { opacity: 0; transition: opacity .6s; }
 .cooker .leaf { transform-box: fill-box; transform-origin: 50% 100%; animation: sway 4s ease-in-out infinite; }
-@keyframes puff {
-  0% { opacity: 0; transform: translateY(14px) scale(.4); }
-  20% { opacity: 1; }
-  100% { opacity: 0; transform: translateY(-34px) scale(1.5); }
-}
+@keyframes puff { 0% { opacity: 0; transform: translateY(14px) scale(.4); } 20% { opacity: 1; } 100% { opacity: 0; transform: translateY(-34px) scale(1.5); } }
 @keyframes jiggle { 0%,100% { transform: rotate(0); } 25% { transform: rotate(-7deg); } 75% { transform: rotate(7deg); } }
 @keyframes flicker { 0%,100% { transform: scaleY(1); } 50% { transform: scaleY(1.22) scaleX(.9); } }
 @keyframes sway { 0%,100% { transform: rotate(-2deg); } 50% { transform: rotate(3deg); } }
@@ -73,27 +65,28 @@ button:focus-visible, [tabindex]:focus-visible { outline: 3px solid var(--haldi)
 .pop { animation: pop .5s cubic-bezier(.3,1.6,.5,1); }
 @keyframes pop { 0% { transform: scale(.92); } 60% { transform: scale(1.04); } 100% { transform: scale(1); } }
 
-/* Listening "ear" button: inner dot grows with loudness, ring fills while a whistle is held. */
-.ear-ring { transition: stroke-dashoffset .1s linear; }
+/* Live dot, like WhatsApp "online" / YouTube "LIVE" */
+.live-dot { width: 10px; height: 10px; border-radius: 99px; background: var(--red); animation: blink 1.4s ease-in-out infinite; }
+@keyframes blink { 50% { opacity: .3; } }
+
+/* Chat bubbles */
+.bubble { position: relative; background: var(--bubble); border-radius: 12px 0 12px 12px; box-shadow: 0 1px .5px rgba(11,20,26,.13); }
+.bubble::after { content: ""; position: absolute; top: 0; right: -8px; border-width: 0 0 10px 10px; border-style: solid; border-color: transparent transparent transparent var(--bubble); }
+.bubble-in { background: var(--card); border-radius: 0 12px 12px 12px; box-shadow: 0 1px .5px rgba(11,20,26,.13); }
 
 /* Alarm overlay */
 .alarm { animation: alarmbg .9s steps(1) infinite; }
-@keyframes alarmbg { 0% { background: var(--mirch); } 50% { background: #C1121F; } }
+@keyframes alarmbg { 0% { background: var(--mirch); } 50% { background: #B3121C; } }
 .shake { animation: shake .5s ease-in-out infinite; }
 @keyframes shake { 0%,100% { transform: rotate(0); } 25% { transform: rotate(-3deg); } 75% { transform: rotate(3deg); } }
 
-/* Dish cards */
-.dish-art { transition: transform .15s, box-shadow .15s; }
-.dish[aria-pressed="true"] .dish-art { box-shadow: 0 0 0 3px var(--cream), 0 0 0 6px var(--ink); }
-.dish:active .dish-art { transform: scale(.97); }
+.btn-green { background: var(--green); color: #fff; }
+.btn-green:active { background: var(--green-dark); }
+.btn-soft { background: var(--green-soft); color: var(--green-dark); }
+.btn-soft:active { background: #CDEDE5; }
 
-.btn-primary { background: var(--brown); color: var(--cream); }
-.btn-primary:active { background: var(--ink); transform: scale(.99); }
-.btn-line { background: var(--mist); color: var(--ink); }
-.btn-line:active { background: var(--sand); }
-
-.fade-in { animation: fadein .25s ease-out; }
-@keyframes fadein { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.fade-in { animation: fadein .2s ease-out; }
+@keyframes fadein { from { opacity: 0; } to { opacity: 1; } }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition: none !important; }

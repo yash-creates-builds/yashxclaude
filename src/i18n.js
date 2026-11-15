@@ -11,24 +11,24 @@ export const LANGS = [
 
 export const VOICE = {
   hi: {
-    count: (n) => `${HI_NUM[n] ?? n} सीटी!`,
-    oneLeft: 'बस एक और!',
-    gasOff: 'गैस बंद करो!',
-    released: 'प्रेशर निकल गया। कुकर खोल सकते हो!',
+    count: (n) => `${HI_NUM[n] ?? n} सीटी`,
+    oneLeft: 'बस एक और',
+    gasOff: 'गैस बंद करो',
+    released: 'प्रेशर निकल गया। कुकर खोल सकते हो',
     hello: 'सीटी सुन रहा हूँ',
   },
   en: {
-    count: (n) => `${EN_NUM[n] ?? n} ${n === 1 ? 'whistle' : 'whistles'}!`,
-    oneLeft: 'Just one more!',
-    gasOff: 'Turn off the gas!',
-    released: 'Pressure is released. You can open the cooker!',
+    count: (n) => `${EN_NUM[n] ?? n} ${n === 1 ? 'whistle' : 'whistles'}`,
+    oneLeft: 'Just one more',
+    gasOff: 'Turn off the gas',
+    released: 'Pressure is released. You can open the cooker',
     hello: 'Listening for whistles',
   },
   gu: {
-    count: (n) => `${GU_NUM[n] ?? n} સીટી!`,
-    oneLeft: 'બસ એક વધુ!',
-    gasOff: 'ગેસ બંધ કરો!',
-    released: 'પ્રેશર નીકળી ગયું. કૂકર ખોલી શકો છો!',
+    count: (n) => `${GU_NUM[n] ?? n} સીટી`,
+    oneLeft: 'બસ એક વધુ',
+    gasOff: 'ગેસ બંધ કરો',
+    released: 'પ્રેશર નીકળી ગયું. કૂકર ખોલી શકો છો',
     hello: 'સીટી સાંભળું છું',
   },
 };

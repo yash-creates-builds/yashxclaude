@@ -95,7 +95,8 @@ if ('speechSynthesis' in window) {
 export function speak(text, lang) {
   if (!('speechSynthesis' in window) || !text) return;
   const bcp = LANGS.find((l) => l.id === lang)?.bcp ?? 'en-IN';
-  const u = new SpeechSynthesisUtterance(text);
+  // Strip symbols some voices read aloud ("exclamation point").
+  const u = new SpeechSynthesisUtterance(String(text).replace(/[!?¡¿*#~_]/g, ' ').replace(/\s+/g, ' ').trim());
   u.lang = bcp;
   const base = bcp.split('-')[0];
   const voice = voices.find((v) => v.lang?.replace('_', '-') === bcp) || voices.find((v) => v.lang?.startsWith(base));
