@@ -109,3 +109,7 @@ button:focus-visible, [tabindex]:focus-visible { outline: 3px solid var(--haldi)
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition: none !important; }
 }
+
+/* Live dot (recording-style "listening now") */
+.live-dot { width: 10px; height: 10px; border-radius: 99px; background: var(--mirch); box-shadow: 0 0 0 0 rgba(230,57,70,.6); animation: livepulse 1.6s ease-out infinite; }
+@keyframes livepulse { 0% { box-shadow: 0 0 0 0 rgba(230,57,70,.55); } 100% { box-shadow: 0 0 0 10px rgba(230,57,70,0); } }

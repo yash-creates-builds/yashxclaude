@@ -123,9 +123,9 @@ function segmented(name, value, options, label) {
   </div>`;
 }
 
-function segProgress(count, target, animateLast = false) {
+function segProgress(count, target, animateLast = false, light = false) {
   return `<div class="flex gap-1.5" aria-hidden="true">
-    ${Array.from({ length: target }, (_, i) => `<div class="seg flex-1 ${animateLast && i === count - 1 ? 'fill' : ''}">${i < count ? '<i></i>' : ''}</div>`).join('')}
+    ${Array.from({ length: target }, (_, i) => `<div class="seg flex-1 ${light ? '!bg-mist' : ''} ${animateLast && i === count - 1 ? 'fill' : ''}">${i < count ? `<i ${light ? 'style="background:var(--brown)"' : ''}></i>` : ''}</div>`).join('')}
   </div>`;
 }
 
@@ -155,12 +155,23 @@ async function confirmSheet({ title, text, yes, no = 'Cancel', danger = false })
 }
 
 // Snackbar with an optional action (e.g. Undo), auto-hides.
+const PANEL_HINT = 'Missed a whistle? Tap <b class="mx-1">+</b> Wrong sound? Tap <b class="ml-1">−</b>';
+
 function snackbar(text, action, onAction, ms = 6000) {
   document.querySelector('.snack')?.remove();
   clearTimeout(snackTimer);
+  // On the listening screen the message lives inside the bottom panel, so it never covers the count.
+  const slot = document.getElementById('panelMsg');
+  if (slot) {
+    slot.innerHTML = `<span class="snack flex w-full items-center gap-3 rounded-2xl bg-ink px-4 py-2 text-left text-cream"><span class="flex-1 text-[16px] font-semibold">${esc(text)}</span>${action ? `<button class="tap flex min-h-10 items-center gap-1.5 rounded-full px-2 text-[16px] font-extrabold text-haldi">${I.undo('h-5 w-5')}${esc(action)}</button>` : ''}</span>`;
+    slot.querySelector('button')?.addEventListener('click', () => { tick(); slot.innerHTML = PANEL_HINT; onAction?.(); });
+    snackTimer = setTimeout(() => { if (document.getElementById('panelMsg') === slot) slot.innerHTML = PANEL_HINT; }, ms);
+    return;
+  }
   const el = document.createElement('div');
   el.className = 'snack fixed inset-x-3 z-40 mx-auto flex max-w-md items-center gap-3 rounded-2xl bg-ink px-4 py-3 text-cream shadow-xl';
-  el.style.bottom = 'calc(96px + env(safe-area-inset-bottom))';
+  const overPanel = state.screen === 'listen' && state.session && !state.session.error && state.session.cookers.length === 1;
+  el.style.bottom = `calc(${overPanel ? 176 : 96}px + env(safe-area-inset-bottom))`;
   el.setAttribute('role', 'status');
   el.innerHTML = `<p class="flex-1 text-[17px] font-semibold">${esc(text)}</p>${action ? `<button class="tap flex min-h-12 items-center gap-1.5 rounded-full px-3 text-[17px] font-extrabold text-haldi">${I.undo('h-5 w-5')}${esc(action)}</button>` : ''}`;
   document.body.appendChild(el);
@@ -772,19 +783,19 @@ function cookerCard(c, i) {
   const open = c.count < c.target;
   const status = open ? `${c.target - c.count} to go`
     : c.released ? 'Ready ✓'
-    : c.releaseEnd ? `Safe to open in <span data-rel-left="${i}" class="tabular-nums">${fmtLeft(c.releaseEnd - Date.now())}</span>`
-    : 'Turn off the gas';
-  return `<div class="rounded-3xl bg-paper p-3 text-ink shadow-sm ${open ? '' : 'ring-2 ring-leaf'}">
+    : c.releaseEnd ? `Safe in <span data-rel-left="${i}" class="tabular-nums">${fmtLeft(c.releaseEnd - Date.now())}</span>`
+    : 'Gas off now';
+  return `<div class="rounded-[28px] bg-paper p-4 text-ink ${open ? '' : 'ring-4 ring-leaf'}">
     <div class="flex items-center gap-2">
-      <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-2xl" style="background:${DISH_BG[c.dish.id] || DISH_BG.custom}">${c.dish.emoji}</span>
-      <span class="truncate text-[18px] font-extrabold">${esc(c.dish.name)}</span>
+      <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-2xl" style="background:${DISH_BG[c.dish.id] || DISH_BG.custom}">${c.dish.emoji}</span>
+      <span class="min-w-0 truncate text-[19px] font-extrabold">${esc(c.dish.name)}</span>
     </div>
-    <p class="mt-2 text-center leading-none"><span class="text-[52px] font-extrabold">${c.count}</span><span class="text-[18px] font-bold text-muted"> / ${c.target}</span></p>
-    <div class="mt-3">${segProgress(c.count, c.target)}</div>
-    <p class="mt-2 text-center text-[15px] font-bold text-ink-2">${status}</p>
-    ${open ? `<div class="mt-2 grid grid-cols-[1fr_1.4fr] gap-2">
-      <button data-cminus="${i}" class="tap btn-soft min-h-12 rounded-full text-[18px] font-extrabold" aria-label="Remove one whistle from ${esc(c.dish.name)}">−1</button>
-      <button data-cplus="${i}" class="tap btn-primary min-h-12 rounded-full text-[18px] font-extrabold" aria-label="Add one whistle to ${esc(c.dish.name)}">+1</button></div>` : ''}
+    <p class="mt-3 leading-none"><span class="text-[64px] font-extrabold tabular-nums">${c.count}</span><span class="text-[22px] font-extrabold text-muted"> / ${c.target}</span></p>
+    <div class="mt-3">${segProgress(c.count, c.target, false, true)}</div>
+    <p class="mt-2 text-[16px] font-bold text-ink-2">${status}</p>
+    ${open ? `<div class="mt-3 grid grid-cols-2 gap-2">
+      <button data-cminus="${i}" class="tap btn-soft flex h-12 items-center justify-center rounded-xl text-2xl font-bold" aria-label="Remove one whistle from ${esc(c.dish.name)}">−</button>
+      <button data-cplus="${i}" class="tap btn-soft flex h-12 items-center justify-center rounded-xl text-2xl font-bold" aria-label="Add one whistle to ${esc(c.dish.name)}">+</button></div>` : ''}
   </div>`;
 }
 
@@ -795,10 +806,18 @@ function renderCards() {
   const chip = $('#unassigned');
   if (chip && s) {
     chip.classList.toggle('hidden', !s.unassigned || !openCookers().length);
+    chip.classList.toggle('flex', !!s.unassigned && !!openCookers().length);
     chip.querySelector('span').textContent = `${s.unassigned} whistle${s.unassigned === 1 ? '' : 's'} not assigned · tap to choose`;
   }
 }
 
+const lastWhistleText = (s) => { const w = s.log.filter((e) => e.n).at(-1); return w ? fmtTime(w.time) : '—'; };
+
+/*
+  Listening screen, modelled on the storybook "detail" page:
+  illustration on top → brown sheet with the big count as the title, a round ear button,
+  status chips, a stats row → a white bottom panel with grey − / + squares to fix the count.
+*/
 function listen() {
   const s = state.session;
   if (s.error) {
@@ -819,60 +838,91 @@ function listen() {
   const multi = isMulti();
   const c0 = s.cookers[0];
   const listening = s.phase !== 'manual' && openCookers(s).length > 0;
+  const chip = (inner, id = '') => `<span ${id ? `id="${id}"` : ''} class="inline-flex min-h-10 items-center gap-2 rounded-full bg-brown-2 px-4 text-[16px] font-bold">${inner}</span>`;
+
   return `
   <main class="flex min-h-dvh flex-col bg-brown text-cream">
     <div class="relative overflow-hidden bg-[#FFD98E]">
       <div class="absolute inset-x-0 top-0 z-10 flex items-center justify-between px-4" style="padding-top:max(.75rem,env(safe-area-inset-top))">
-        <button data-stop class="tap flex min-h-12 items-center gap-2 rounded-full bg-white/90 px-4 text-[17px] font-bold text-ink shadow-sm">${I.stop('h-4 w-4')} Stop</button>
-        <span id="aiBadge" class="hidden rounded-full bg-leaf px-3 py-1.5 text-[14px] font-bold text-white shadow-sm">Smart listening</span>
+        <button data-stop class="tap flex min-h-12 items-center gap-2 rounded-full bg-white/90 px-4 text-[17px] font-bold text-ink shadow-sm" aria-label="Stop listening">${I.back('h-5 w-5')} Stop</button>
+        <span id="aiBadge" class="hidden rounded-full bg-white/90 px-3 py-2 text-[14px] font-bold text-ink shadow-sm">✦ Smart listening</span>
       </div>
-      ${multi
-        ? `<div id="cards" class="mx-auto grid max-w-md grid-cols-2 gap-3 px-4 pb-12" style="padding-top:calc(4.5rem + env(safe-area-inset-top))">${s.cookers.map(cookerCard).join('')}</div>`
-        : `<div id="cookerWrap" class="mx-auto max-w-md pt-12">${cookerSVG({ count: c0.count, target: c0.target, scene: true, id: 'liveCooker' })}</div>`}
+      <div class="absolute inset-x-0 bottom-0 border-t-[3px] border-ink bg-brown-3" style="height:${multi ? 55 : 61}px" aria-hidden="true"></div>
+      <div id="cookerWrap" class="relative mx-auto w-full ${multi ? 'max-w-[240px]' : 'max-w-[290px]'} pb-8 pt-14">${cookerSVG({ scene: true, id: 'liveCooker' })}</div>
     </div>
 
-    <section class="relative -mt-8 flex-1 rounded-t-[32px] bg-brown px-5 pt-6" style="padding-bottom:calc(${multi ? 40 : 110}px + env(safe-area-inset-bottom))">
-      <div class="flex items-start justify-between gap-4">
-        <div class="min-w-0">
-          <h1 class="text-[30px] font-extrabold leading-tight">${multi ? 'Two cookers' : esc(c0.dish.name)}</h1>
-          <p class="mt-0.5 flex items-center gap-2 text-[17px] font-semibold text-sand" aria-live="polite"><span id="status"></span><span id="dots" class="dots"><span></span><span></span><span></span></span></p>
+    <section class="relative -mt-10 flex-1 rounded-t-[36px] bg-brown px-6 pt-7" style="padding-bottom:calc(${multi ? 32 : 168}px + env(safe-area-inset-bottom))">
+      ${multi ? `
+        <div class="flex items-center justify-between gap-4">
+          <div><h1 class="text-[30px] font-extrabold leading-tight">Two cookers</h1>
+          <p class="text-[17px] font-semibold text-sand">Seeti asks which one whistled.</p></div>
+          ${earButton()}
         </div>
-        <div class="relative h-16 w-16 shrink-0" aria-hidden="true">
-          <svg viewBox="0 0 64 64" class="absolute inset-0 -rotate-90">
-            <circle cx="32" cy="32" r="29" fill="none" stroke="var(--brown-2)" stroke-width="5"/>
-            <circle id="earRing" class="ear-ring" cx="32" cy="32" r="29" fill="none" stroke="var(--haldi)" stroke-width="5" stroke-linecap="round" pathLength="100" stroke-dasharray="100" stroke-dashoffset="100"/>
-          </svg>
-          <span id="earDot" class="absolute inset-2 rounded-full bg-cream/15 transition-transform duration-100"></span>
-          <span class="absolute inset-0 flex items-center justify-center">${I.ear('h-7 w-7')}</span>
+        <button id="unassigned" class="tap mt-4 hidden w-full items-center gap-2 rounded-2xl bg-haldi px-4 py-3 text-left text-[17px] font-bold text-ink">${I.bell('h-5 w-5 shrink-0')}<span></span></button>
+        <div id="cards" class="mt-4 grid grid-cols-2 gap-3"></div>` : `
+        <div class="flex items-end justify-between gap-4">
+          <div class="min-w-0">
+            <p class="text-[19px] font-bold text-sand">${c0.dish.emoji} ${esc(c0.dish.name)}</p>
+            <p class="mt-1 leading-none" aria-live="polite"><span id="bigCount" class="text-[112px] font-extrabold tabular-nums tracking-tight">${c0.count}</span><span class="text-[30px] font-extrabold text-sand"> / ${c0.target}</span></p>
+            <p class="mt-1 text-[19px] font-bold">whistles</p>
+          </div>
+          ${earButton()}
         </div>
+        <div class="mt-5" id="progress">${segProgress(c0.count, c0.target)}</div>`}
+
+      <div class="mt-5 flex flex-wrap gap-2">
+        ${chip(`<span class="live-dot ${listening ? '' : 'hidden'}"></span><span id="status"></span><span id="dots" class="dots"><span></span><span></span><span></span></span>`)}
+        ${multi ? '' : chip(`<span id="toGo">${c0.target - c0.count} to go</span>`)}
       </div>
 
-      ${multi ? `<button id="unassigned" class="tap mt-3 hidden w-full items-center gap-2 rounded-2xl bg-haldi px-4 py-3 text-left text-[17px] font-bold text-ink">${I.bell('h-5 w-5 shrink-0')}<span></span></button>` : `
-      <div class="mt-4" id="progress">${segProgress(c0.count, c0.target)}</div>
-      <p id="countText" class="mt-2 text-[17px] text-sand"><b class="text-cream">${c0.count} of ${c0.target}</b> whistles</p>
-      ${listening ? '<button data-add class="tap mt-3 flex min-h-12 items-center gap-2 rounded-full bg-brown-2 px-4 text-[16px] font-bold">+ Add a second cooker</button>' : ''}`}
+      <div class="mt-5 grid grid-cols-2 border-y border-brown-2 py-4">
+        <div class="flex items-center gap-3">${I.clock('h-6 w-6 text-sand')}<div><p class="text-[18px] font-extrabold leading-tight">${fmtTime(s.startedAt)}</p><p class="text-[14px] font-semibold text-sand">Started</p></div></div>
+        <div class="flex items-center gap-3 border-l border-brown-2 pl-4">${I.bell('h-6 w-6 text-sand')}<div><p id="lastAt" class="text-[18px] font-extrabold leading-tight">${lastWhistleText(s)}</p><p class="text-[14px] font-semibold text-sand">Last whistle</p></div></div>
+      </div>
 
-      <div class="mt-4 rounded-2xl bg-brown-2/60 px-4 py-3 ${listening ? '' : 'hidden'}">
-        <div class="relative h-3 overflow-hidden rounded-full bg-brown" aria-hidden="true">
+      <div class="mt-5 ${listening ? '' : 'hidden'}">
+        <div class="flex items-center justify-between"><h2 class="text-[17px] font-extrabold">Sound</h2><span class="text-[14px] font-semibold text-sand">whistle must pass the yellow line</span></div>
+        <div class="relative mt-2 h-4 overflow-hidden rounded-full bg-brown-2" aria-hidden="true">
           <div id="meterLevel" class="h-full w-0 rounded-full bg-sand transition-[width] duration-75"></div>
-          <div id="meterThr" class="absolute top-0 h-full w-1 rounded bg-haldi" style="left:0"></div>
+          <div id="meterThr" class="absolute top-0 h-full w-1.5 rounded bg-haldi" style="left:0"></div>
         </div>
-        <p id="meterNote" class="mt-2 text-[16px] text-sand">Getting ready…</p>
+        <p id="meterNote" class="mt-2 text-[17px] text-sand">Getting ready…</p>
       </div>
 
-      <h2 class="mt-6 text-[19px] font-extrabold">Whistles</h2>
-      <div id="log" class="mt-2">${logList(s.log)}</div>
+      ${!multi && listening ? '<button data-add class="tap mt-5 flex min-h-12 w-full items-center justify-center gap-2 rounded-full border-2 border-brown-2 text-[17px] font-bold">+ Add a second cooker</button>' : ''}
+
+      <h2 class="mt-7 text-[19px] font-extrabold">Whistles</h2>
+      <div id="log" class="mt-3">${logList(s.log)}</div>
     </section>
 
-    ${multi ? '' : `<div class="fixed inset-x-0 bottom-0 z-20 bg-brown/95 px-4 pt-3 backdrop-blur" style="padding-bottom:max(.75rem,env(safe-area-inset-bottom))">
-      <div class="mx-auto flex max-w-md gap-3">
-        <button data-minus class="tap flex min-h-16 flex-col items-center justify-center rounded-full bg-brown-2 px-6" aria-label="Remove one whistle">
-          <span class="text-[22px] font-extrabold leading-none">−1</span><span class="text-[13px] font-semibold text-sand">mistake</span>
-        </button>
-        <button data-plus class="tap flex min-h-16 flex-1 items-center justify-center rounded-full bg-cream text-[22px] font-extrabold text-brown shadow-md" aria-label="Add one whistle">+1 whistle</button>
+    ${multi ? '' : `
+    <div class="fixed inset-x-0 bottom-0 z-20" style="padding-bottom:env(safe-area-inset-bottom)">
+      <div class="mx-auto max-w-md rounded-t-[28px] bg-paper px-5 pb-4 pt-4 text-ink shadow-[0_-8px_24px_rgba(59,35,20,.18)]">
+        <div class="flex items-center gap-3">
+          <button data-minus class="tap btn-soft flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl text-3xl font-bold" aria-label="Remove one whistle">−</button>
+          <div class="flex h-16 flex-1 flex-col items-center justify-center rounded-2xl bg-mist">
+            <span id="panelCount" class="text-[24px] font-extrabold leading-none tabular-nums">${c0.count} of ${c0.target}</span>
+            <span class="text-[13px] font-semibold text-muted">fix the count</span>
+          </div>
+          <button data-plus class="tap btn-primary flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl text-3xl font-bold" aria-label="Add one whistle">+</button>
+        </div>
+        <div id="panelMsg" class="mt-2 flex min-h-12 items-center justify-center text-center text-[15px] text-muted" aria-live="polite">Missed a whistle? Tap <b class="mx-1">+</b> Wrong sound? Tap <b class="ml-1">−</b></div>
       </div>
     </div>`}
   </main>`;
+}
+
+// Round dark ear button (like the "listen" button in the reference). Ring fills while a whistle is held.
+function earButton() {
+  return `<div class="relative h-[76px] w-[76px] shrink-0" aria-hidden="true">
+    <span class="absolute inset-0 rounded-full bg-ink"></span>
+    <svg viewBox="0 0 76 76" class="absolute inset-0 -rotate-90">
+      <circle cx="38" cy="38" r="35" fill="none" stroke="rgba(255,248,239,.18)" stroke-width="4"/>
+      <circle id="earRing" class="ear-ring" cx="38" cy="38" r="35" fill="none" stroke="var(--haldi)" stroke-width="4" stroke-linecap="round" pathLength="100" stroke-dasharray="100" stroke-dashoffset="100"/>
+    </svg>
+    <span id="earDot" class="absolute inset-3 rounded-full bg-cream/15 transition-transform duration-100"></span>
+    <span class="absolute inset-0 flex items-center justify-center text-cream">${I.ear('h-8 w-8')}</span>
+  </div>`;
 }
 
 bind.listen = () => {
@@ -968,18 +1018,22 @@ function updateStatus() {
 
 function updateCount(added = false) {
   const s = state.session;
+  const last = $('#lastAt');
+  if (last) last.textContent = lastWhistleText(s);
   if (isMulti()) { renderCards(); updateStatus(); return; }
   const c = s.cookers[0];
-  const svgText = $('#liveCooker .cooker-count');
-  if (svgText) {
-    svgText.textContent = c.count;
-    const wrap = $('#cookerWrap');
-    wrap?.classList.remove('pop');
-    void wrap?.offsetWidth;
-    wrap?.classList.add('pop');
+  const big = $('#bigCount');
+  if (big) {
+    big.textContent = c.count;
+    big.classList.remove('pop');
+    void big.offsetWidth;
+    big.classList.add('pop');
+    big.style.display = 'inline-block';
   }
-  const ct = $('#countText');
-  if (ct) ct.innerHTML = `<b class="text-cream">${c.count} of ${c.target}</b> whistles`;
+  const pc = $('#panelCount');
+  if (pc) pc.textContent = `${c.count} of ${c.target}`;
+  const tg = $('#toGo');
+  if (tg) tg.textContent = c.count >= c.target ? 'Done' : `${c.target - c.count} to go`;
   const pg = $('#progress');
   if (pg) pg.innerHTML = segProgress(c.count, c.target, added);
   updateStatus();
