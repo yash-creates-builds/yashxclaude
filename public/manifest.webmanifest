@@ -1,0 +1,19 @@
+{
+  "name": "Seeti — Cooker Whistle Counter",
+  "short_name": "Seeti",
+  "description": "Listens to your pressure cooker, counts the whistles and tells you when to turn off the gas.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FFF6E9",
+  "theme_color": "#FFF6E9",
+  "lang": "en-IN",
+  "categories": ["food", "lifestyle", "utilities"],
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}
