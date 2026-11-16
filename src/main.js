@@ -12,6 +12,7 @@ import { openMic } from './audio.js';
 import { WhistleDetector, buildParams, calibrate } from './detector.js';
 import { cookerSVG, puff } from './cooker.js';
 import { I } from './icons.js';
+import { isNative, prepareNotifications, scheduleAlert, cancelAlert } from './native.js';
 
 /*
   Look: warm storybook (cream, white cards, brown sheet, leaf + turmeric).
@@ -486,6 +487,7 @@ async function startSession(targetOverride) {
   detector.start();
   keepAwake(true).then(updateWakeNote);
   say(V().hello);
+  prepareNotifications();
   if (state.settings.ai) startAiLayer();
   clearInterval(watchTimer);
   watchTimer = setInterval(watchdog, 1000);
@@ -530,6 +532,7 @@ function stopListening() {
 }
 
 function endSession() {
+  state.session?.cookers.forEach((_, i) => cancelAlert(100 + i));
   stopListening();
   clearInterval(releaseTicker);
   releaseTicker = null;
@@ -718,8 +721,10 @@ function cookerDone(i) {
 function afterGasOff(i) {
   const s = state.session;
   const c = s.cookers[i];
-  if (state.settings.releaseOn) c.releaseEnd = Date.now() + state.settings.releaseMin * 60_000;
-  else c.released = true;
+  if (state.settings.releaseOn) {
+    c.releaseEnd = Date.now() + state.settings.releaseMin * 60_000;
+    scheduleAlert(100 + i, `${c.dish.name}: safe to open now`, 'The pressure is out. Check the cooker, then open it.', new Date(c.releaseEnd));
+  } else c.released = true;
   if (!isMulti()) {
     if (c.releaseEnd) { keepAwake(true); go('release'); } else { endSession(); go('done'); }
     return;
@@ -1105,6 +1110,7 @@ function showAlarm({ title, sub, kind, dish, onStop }) {
   document.body.appendChild(overlay);
   overlay.focus();
   startAlarm(lang, kind, multi ? dish : '');
+  if (document.hidden) scheduleAlert(kind === 'gasOff' ? 300 : 301, `${dish}: ${title.en}`, sub);
   detector?.pauseFor(3600); // don't count the alarm's own beeps as a whistle
   let stopped = false;
   const stop = () => {
@@ -1175,7 +1181,7 @@ bind.release = () => {
   releaseTimer = setInterval(tickClock, 250);
   document.addEventListener('visibilitychange', tickClock);
   tickClock();
-  $('[data-addmin]').addEventListener('click', () => { tick(); c.releaseEnd += 60_000; c.extraMs = (c.extraMs || 0) + 60_000; tickClock(); snackbar('Added 1 minute'); });
+  $('[data-addmin]').addEventListener('click', () => { tick(); c.releaseEnd += 60_000; c.extraMs = (c.extraMs || 0) + 60_000; scheduleAlert(100, `${c.dish.name}: safe to open now`, 'The pressure is out. Check the cooker, then open it.', new Date(c.releaseEnd)); tickClock(); snackbar('Added 1 minute'); });
   $('[data-skip]').addEventListener('click', () => { tick(); clearInterval(releaseTimer); document.removeEventListener('visibilitychange', tickClock); endSession(); go('done'); });
 };
 
@@ -1348,7 +1354,7 @@ window.addEventListener('beforeunload', (e) => {
 /* ---------------------------------------------------------------- start */
 render();
 
-if ('serviceWorker' in navigator && import.meta.env.PROD && !PREVIEW) {
+if ('serviceWorker' in navigator && import.meta.env.PROD && !PREVIEW && !isNative) {
   window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}));
 }
 if (!PREVIEW && state.settings.ai && 'requestIdleCallback' in window && navigator.onLine && !navigator.connection?.saveData) {

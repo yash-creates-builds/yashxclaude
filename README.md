@@ -56,3 +56,16 @@ After each count, Seeti ignores sound for 6 s (one whistle = one count).
 | `src/sw-template.js` | Offline service worker (built into `/sw.js`) |
 
 Optional: to self-host the AI model, put YAMNet's `model.json` + shards in `public/models/yamnet/`.
+
+## Phone apps (App Store + Play Store)
+
+The same code builds the website **and** the iPhone + Android apps (wrapped with Capacitor).
+
+| Command | What it does |
+|---|---|
+| `npm run app:android` | Builds the app and opens it in **Android Studio** |
+| `npm run app:ios` | Builds the app and opens it in **Xcode** (Mac only) |
+| `npm run app:sync` | Copies the latest web code into both apps |
+| `npm run app:icons` | Regenerates app icons and splash screens from `public/icon.svg` |
+
+App ID: `com.seeti.app` (in `capacitor.config.json`). Change it before the first store upload — it can't be changed after.

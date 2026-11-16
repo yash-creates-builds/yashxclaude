@@ -3,3 +3,8 @@ dist
 .vercel
 .DS_Store
 dist-preview
+# Capacitor build output (native projects themselves are committed)
+android/app/build
+android/.gradle
+ios/App/Pods
+ios/App/build

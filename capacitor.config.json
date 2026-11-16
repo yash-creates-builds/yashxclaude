@@ -1,0 +1,16 @@
+{
+  "appId": "com.seeti.app",
+  "appName": "Seeti",
+  "webDir": "dist",
+  "android": {
+    "webContentsDebuggingEnabled": false
+  },
+  "ios": {
+    "contentInset": "never"
+  },
+  "plugins": {
+    "LocalNotifications": {
+      "iconColor": "#6B3A2A"
+    }
+  }
+}

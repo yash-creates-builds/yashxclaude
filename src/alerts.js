@@ -1,4 +1,5 @@
 import { LANGS, VOICE } from './i18n.js';
+import { nativeVibrate, nativeKeepAwake } from './native.js';
 
 /* ---------- Sound (generated with Web Audio, no files needed) ---------- */
 let outCtx = null;
@@ -83,7 +84,8 @@ export function stopAlarm() {
 
 /* ---------- Vibration ---------- */
 export function vibrate(pattern) {
-  try { navigator.vibrate?.(pattern); } catch { /* not supported (iOS) */ }
+  if (nativeVibrate(pattern)) return;
+  try { navigator.vibrate?.(pattern); } catch { /* not supported (iOS browsers) */ }
 }
 
 /* ---------- Voice ---------- */
@@ -124,6 +126,8 @@ let wantWake = false;
 
 export async function keepAwake(on) {
   wantWake = on;
+  const native = await nativeKeepAwake(on);
+  if (native !== null) { wakeLock = native && on ? { native: true } : null; return native; }
   if (!('wakeLock' in navigator)) return false;
   try {
     if (on && !wakeLock) {
