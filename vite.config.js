@@ -12,7 +12,7 @@ function seetiServiceWorker() {
     generateBundle(_, bundle) {
       // Skip source maps, legacy .woff fonts and scripts we don't render (woff2 covers every modern phone).
       const files = Object.keys(bundle).filter((f) => !f.endsWith('.map') && !f.endsWith('.woff') && !f.includes('vietnamese'));
-      const publicFiles = ['manifest.webmanifest', 'icon.svg', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png', 'apple-touch-icon.png'];
+      const publicFiles = ['privacy.html', 'manifest.webmanifest', 'icon.svg', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png', 'apple-touch-icon.png'];
       const urls = ['/', ...publicFiles.map((f) => '/' + f), ...files.map((f) => '/' + f)];
       const version = createHash('sha1').update(urls.join('|')).digest('hex').slice(0, 10);
       const source = readFileSync(new URL('./src/sw-template.js', import.meta.url), 'utf8')
