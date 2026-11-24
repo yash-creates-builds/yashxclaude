@@ -852,8 +852,8 @@ function listen() {
         <button data-stop class="tap flex min-h-12 items-center gap-2 rounded-full bg-white/90 px-4 text-[17px] font-bold text-ink shadow-sm" aria-label="Stop listening">${I.back('h-5 w-5')} Stop</button>
         <span id="aiBadge" class="hidden rounded-full bg-white/90 px-3 py-2 text-[14px] font-bold text-ink shadow-sm">✦ Smart listening</span>
       </div>
-      <div class="absolute inset-x-0 bottom-0 border-t-[3px] border-ink bg-brown-3" style="height:${multi ? 55 : 61}px" aria-hidden="true"></div>
-      <div id="cookerWrap" class="relative mx-auto w-full ${multi ? 'max-w-[240px]' : 'max-w-[290px]'} pb-8 pt-14">${cookerSVG({ scene: true, id: 'liveCooker' })}</div>
+      <div class="absolute inset-x-0 bottom-0 border-t-[3px] border-ink bg-brown-3" style="height:calc(32px + ${multi ? 'min(240px, 26dvh)' : 'min(290px, 30dvh)'} * 0.1)" aria-hidden="true"></div>
+      <div id="cookerWrap" class="relative mx-auto w-full pb-8 pt-14" style="max-width:${multi ? 'min(240px, 26dvh)' : 'min(290px, 30dvh)'}">${cookerSVG({ scene: true, id: 'liveCooker' })}</div>
     </div>
 
     <section class="relative -mt-10 flex-1 rounded-t-[36px] bg-brown px-6 pt-7" style="padding-bottom:calc(${multi ? 32 : 168}px + env(safe-area-inset-bottom))">
