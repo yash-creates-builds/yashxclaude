@@ -2,6 +2,6 @@
 <resources>
     <string name="app_name">Seeti</string>
     <string name="title_activity_main">Seeti</string>
-    <string name="package_name">com.seeti.app</string>
-    <string name="custom_url_scheme">com.seeti.app</string>
+    <string name="package_name">com.cookerseeti.app</string>
+    <string name="custom_url_scheme">com.cookerseeti.app</string>
 </resources>

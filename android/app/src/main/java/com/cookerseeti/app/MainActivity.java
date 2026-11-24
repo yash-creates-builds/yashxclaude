@@ -1,4 +1,4 @@
-package com.seeti.app;
+package com.cookerseeti.app;
 
 import com.getcapacitor.BridgeActivity;
 

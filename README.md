@@ -68,4 +68,4 @@ The same code builds the website **and** the iPhone + Android apps (wrapped with
 | `npm run app:sync` | Copies the latest web code into both apps |
 | `npm run app:icons` | Regenerates app icons and splash screens from `public/icon.svg` |
 
-App ID: `com.seeti.app` (in `capacitor.config.json`). Change it before the first store upload — it can't be changed after.
+App ID: `com.cookerseeti.app` (in `capacitor.config.json`). Locked once uploaded to Google Play.
