@@ -45,7 +45,7 @@ Seeti is a helper. Always check your cooker yourself before opening it.
 App: **Food & Drink**
 
 ## Contact
-- Email: [your support email]
+- Email: yashparikhcreates@gmail.com
 - Website: your Vercel link
 - Privacy policy: your Vercel link + /privacy.html
 
