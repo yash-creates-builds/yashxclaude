@@ -58,7 +58,7 @@ export default {
   joined: 'परिवार की डायरी से जुड़ गए', created: 'परिवार की डायरी तैयार', connecting: 'जुड़ रहा है…', codeHint: 'यह कोड घर के सभी लोगों को दें',
   people: (n) => `${n} लोग`, next: 'आगे',
   markedToday: 'आज धोबी आया', tapToMark: 'धोबी आए तो यहाँ दबाएँ', tapToSee: 'सभी हाज़िरी देखें',
-  tapIfCame: 'धोबी आज आया हो तो यहाँ दबाएँ', attendanceMarked: 'हाज़िरी लग गई',
+  givenThisMonth: 'इस महीने दिए कपड़े', withDhobiNow: 'अभी धोबी के पास', tapIfCame: 'धोबी आज आया हो तो यहाँ दबाएँ', attendanceMarked: 'हाज़िरी लग गई',
   chooseLang: 'भाषा चुनें',
   weekdays: ['रवि', 'सोम', 'मंगल', 'बुध', 'गुरु', 'शुक्र', 'शनि'],
   weekdayLetters: ['र', 'सो', 'मं', 'बु', 'गु', 'शु', 'श'],

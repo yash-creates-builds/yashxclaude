@@ -72,9 +72,9 @@ screen('home', {
 
       <section class="stats" aria-label="summary">
         <div class="stats-month">${I.calendar}<b>${esc(fmtMonth(thisMonth()))}</b></div>
-        <div class="stat"><span>${esc(t('dayGiven'))}</span><b>${givenThisMonth}</b></div>
+        <div class="stat"><span>${esc(t('givenThisMonth'))}</span><b>${givenThisMonth}</b></div>
         <button class="stat stat-link tap" data-act="bill" aria-label="${esc(t('seeBill'))}"><span>${esc(t('nav_bill'))} ${I.next}</span><b>${money(bill.total)}</b></button>
-        <div class="stat"><span><i class="key key-sky"></i>${esc(t('withDhobi'))}</span><b>${out}</b></div>
+        <div class="stat"><span><i class="key key-sky"></i>${esc(t('withDhobiNow'))}</span><b>${out}</b></div>
         <div class="stat ${missing ? 'stat-red' : ''}"><span><i class="key key-red"></i>${esc(t('missing'))}</span><b>${missing}</b></div>
       </section>
 

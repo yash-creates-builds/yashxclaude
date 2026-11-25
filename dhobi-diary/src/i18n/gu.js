@@ -58,7 +58,7 @@ export default {
   joined: 'પરિવારની ડાયરીમાં જોડાઈ ગયા', created: 'પરિવારની ડાયરી તૈયાર', connecting: 'જોડાય છે…', codeHint: 'આ કોડ ઘરના બધાને આપો',
   people: (n) => `${n} લોકો`, next: 'આગળ',
   markedToday: 'આજે ધોબી આવ્યો', tapToMark: 'ધોબી આવે ત્યારે અહીં દબાવો', tapToSee: 'બધી હાજરી જુઓ',
-  tapIfCame: 'ધોબી આજે આવ્યો હોય તો અહીં દબાવો', attendanceMarked: 'હાજરી પુરાઈ ગઈ',
+  givenThisMonth: 'આ મહિને આપેલાં કપડાં', withDhobiNow: 'હાલ ધોબી પાસે', tapIfCame: 'ધોબી આજે આવ્યો હોય તો અહીં દબાવો', attendanceMarked: 'હાજરી પુરાઈ ગઈ',
   chooseLang: 'ભાષા પસંદ કરો',
   weekdays: ['રવિ', 'સોમ', 'મંગળ', 'બુધ', 'ગુરુ', 'શુક્ર', 'શનિ'],
   weekdayLetters: ['ર', 'સો', 'મં', 'બુ', 'ગુ', 'શુ', 'શ'],

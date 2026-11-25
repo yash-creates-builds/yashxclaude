@@ -72,7 +72,7 @@ export default {
   joined: 'Joined the family diary', created: 'Family diary ready', connecting: 'Connecting…', codeHint: 'Give this code to everyone at home',
   people: (n) => `${n} ${n === 1 ? 'person' : 'people'}`, next: 'Continue',
   markedToday: 'Dhobi came today', tapToMark: 'Tap here when the dhobi comes', tapToSee: 'see all visits',
-  tapIfCame: 'Tap here if the dhobi came today', attendanceMarked: 'Attendance marked',
+  givenThisMonth: 'Clothes given this month', withDhobiNow: 'Currently with dhobi', tapIfCame: 'Tap here if the dhobi came today', attendanceMarked: 'Attendance marked',
   chooseLang: 'Choose language',
   weekdays: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
   weekdayLetters: ['S', 'M', 'T', 'W', 'T', 'F', 'S'],
