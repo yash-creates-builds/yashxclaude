@@ -6,7 +6,7 @@ Tick these in order. ⏱ = waiting time you can't skip.
 - [ ] **App ID** in `capacitor.config.json` + `android/app/build.gradle` is final (now `com.dhobikhata.app`). It can never change after the first upload.
 - [ ] **Supabase** set up and keys pasted (README → "One-time Supabase setup").
 - [ ] **Support email** added in `public/privacy.html`.
-- [ ] **Privacy policy online:** in `dhobi-diary/` run `npx vercel` (log in, accept defaults, root = this folder). The policy is then at `https://<your-site>.vercel.app/privacy.html`.
+- [x] **Privacy policy online:** https://dhobidiary.vercel.app/privacy.html (Vercel, deploys automatically from GitHub).
 
 ## B. Build the signed app (on your laptop)
 ```bash
