@@ -1,13 +1,13 @@
 // Family sharing: one diary for the whole household, synced between phones.
-// Screens only talk to this file. The Firebase code is loaded only when a family is used,
-// so phones without sharing never download or run it.
+// Screens only talk to this file. The backend code is loaded only when a family is used,
+// so phones without sharing never download or run it. Backend: Supabase (see supabase-sync.js).
 import { getDB, setFamily, setSetting } from '../../core/db.js';
 import { familyAvailable } from './config.js';
 
 let impl = null;
 async function load() {
   if (impl) return impl;
-  impl = await import('./firebase-sync.js');
+  impl = await import('./supabase-sync.js');
   impl.onStatus((s) => { current = s; subs.forEach((fn) => fn(s)); });
   return impl;
 }

@@ -9,7 +9,6 @@ Replaces the paper diary families use to track clothes given to the dhobi.
 |---|---|
 | Try in a browser (laptop) | `npm install` then `npm run dev` |
 | Tests | `npm test` |
-| Test family sync locally (no account) | `npm run emulators` in one terminal, `npm run dev:family` in another |
 | Android app (opens Android Studio) | `npm run app:android` |
 | iPhone app (opens Xcode, Mac only) | `npm run app:ios` |
 | Copy latest code into both apps | `npm run app:sync` |
@@ -28,31 +27,33 @@ App ID: `com.dhobidiary.app` (in `capacitor.config.json`). **Pick your final ID 
 | `src/platform/native.js` | Phone features: haptics, share sheet, files, back button |
 | `src/features/` | `backup.js` (CSV + JSON), `sharing/` (family sync, see below) |
 
-## Family diary (sync between phones)
+## Family diary (sync between phones) — Supabase
 
-How it works for users: one person taps **Settings → Family → Start a family diary**, types their name and gets a 6-letter code. Everyone else taps **Join with a code**. Each phone keeps working offline and syncs when online.
+How it works for users: one person taps **Settings → Family → Start a family diary**, types their name and gets a 6-letter code. Everyone else taps **Join with a code**. Each phone keeps working offline; changes wait in a queue on the phone and sync when online.
 
 | File | Job |
 |---|---|
 | `src/features/sharing/index.js` | The only thing screens use (`family.create / join / leave`) |
-| `src/features/sharing/firebase-sync.js` | Firebase code. Loaded only when a family is used |
-| `src/features/sharing/config.js` | **Paste your Firebase config here** |
-| `firestore.rules` | Security: only members of a household can read/write it |
+| `src/features/sharing/sync-engine.js` | Offline queue, merging, live updates (no Supabase code, fully tested) |
+| `src/features/sharing/supabase-sync.js` | Connects the engine to Supabase. Loaded only when a family is used |
+| `src/features/sharing/config.js` | **Paste your Supabase URL + anon key here** |
+| `supabase/migrations/001_dhobi_diary.sql` | Tables, security rules, create/join functions |
+| `tests/sync.test.js` | 2-phone tests against a fake Supabase (`npm test`) |
 
-### One-time Firebase setup (about 10 minutes, free plan)
-1. https://console.firebase.google.com → **Add project** (Analytics not needed).
-2. **Build → Authentication → Get started → Sign-in method → Anonymous → Enable.**
-3. **Build → Firestore Database → Create database** → pick a region in India (`asia-south1`) → production mode.
-4. **Project settings → Your apps → Web (`</>`)** → register → copy the `firebaseConfig` object into `src/features/sharing/config.js`.
-5. Upload the security rules:
-   `npx firebase login` then `npx firebase deploy --only firestore:rules --project <your-project-id>`
-6. `npm run app:sync` and run the app.
+### One-time Supabase setup (about 10 minutes, free plan)
+1. Sign up at https://supabase.com (GitHub or email) → **New project**. Name: `dhobi-diary`. Region: **South Asia (Mumbai)**. Save the database password somewhere safe (you won't need it in the app).
+2. **SQL Editor → New query** → paste all of `supabase/migrations/001_dhobi_diary.sql` → **Run**. It should say "Success".
+3. **Authentication → Sign In / Providers → Allow anonymous sign-ins → On → Save.**
+4. **Project Settings → API (Data API)** → copy **Project URL** and the **anon public** key into `src/features/sharing/config.js`.
+5. `npm run app:sync` and run the app. Settings → Family now shows "Start a family diary".
 
-Until step 4 is done, the Family card says "not switched on yet" and everything else works as before.
+The anon key is meant to be inside apps; the database rules stop anyone without the family code from reading anything. Never put the **service_role** key in the app.
+
+**Free plan note:** Supabase pauses a free project after 7 days with no activity at all (you get an email and can restore it in one click). With real users this won't happen; before launch, open the app once a week or upgrade later.
 
 ## Data safety
 - Saved in the app's private storage (localStorage + a JSON file mirror in the app's data folder).
-- With a family diary, also in Firestore (offline copy on each phone, synced when online).
+- With a family diary, also in your Supabase database (each phone keeps its own copy and a queue of unsent changes).
 - Users can save a backup file and restore it from **Settings → Backup**.
 
 ## Bill rules

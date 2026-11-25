@@ -20,8 +20,8 @@ GIVE CLOTHES
 • See the total count and approx. cost right away
 
 RECEIVE CLOTHES
-• One tap: "All received"
-• Or count each item — the app shows "1 Kurta missing" in red
+• ✓ Came, ✗ Not back, or "Some" with big number buttons
+• A running count: "Received 5 of 7" until everything is back
 
 MONTHLY BILL
 • Totals by service, month calendar, mark as paid
@@ -31,7 +31,8 @@ MADE FOR EVERY FAMILY
 • English, हिंदी, ગુજરાતી
 • Grandma Mode: only Give, Receive and Bill, extra large
 • More than one dhobi? No problem
-• "Dhobi came" button: keeps the date, day and time of every visit
+• One big "Dhobi came today" button: keeps the date, day and time of every visit
+• Receive with ✓ / ✗ for each item, or pick how many came back. Partly back? Finish it later, even on a past date.
 • Family diary: everyone at home uses the same diary on their own phone. Join with a 6-letter code. No passwords.
 • Undo after saving, Excel (CSV) export, backup file
 
@@ -45,5 +46,5 @@ House & Home (Google Play) · Lifestyle (App Store)
 
 ## Data safety (Google Play)
 - Data collected (only when a family diary is used): **App activity → Other user-generated content** (diary entries) and **Personal info → Name** (first name typed by the user). Purpose: App functionality. Encrypted in transit: Yes. Users can request deletion: Yes.
-- Data shared with third parties: **None** (Firebase is a service provider, not "sharing").
+- Data shared with third parties: **None** (Supabase is a service provider that stores data for us, not "sharing").
 - Privacy policy URL: host `public/privacy.html` (e.g. Vercel / GitHub Pages) and paste the link.
