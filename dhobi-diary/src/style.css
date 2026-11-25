@@ -472,3 +472,14 @@ button:disabled { cursor: default; }
 .receipts { display: flex; flex-direction: column; gap: 6px; margin: 10px 0; }
 .receipt-row { display: flex; flex-direction: column; padding: 10px 14px; border-radius: 12px; background: var(--paper); border: 1.5px solid var(--line); }
 .receipt-row span { color: var(--muted); font-size: .9rem; }
+
+/* "Some": pick how many came back */
+.some-pick { display: grid; grid-template-columns: 1fr auto; align-items: baseline; gap: 4px 10px; padding: 12px; border-radius: 12px; background: var(--paper); border: 1.5px solid var(--ink); }
+.some-pick b { font-size: 1.1rem; font-weight: 500; }
+.some-pick small { color: var(--muted); font-size: .95rem; }
+.num-grid { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); gap: 8px; margin-top: 6px; }
+.num { min-height: 60px; border-radius: 14px; border: 1.5px solid var(--ink); background: var(--paper); font-size: 1.6rem; font-weight: 500; font-variant-numeric: tabular-nums; }
+.num.on { background: var(--sky); border-width: 2.5px; }
+.big-stepper { grid-column: 1 / -1; display: grid; grid-template-columns: 72px 1fr 72px; align-items: center; margin-top: 6px; border: 1.5px solid var(--ink); border-radius: 14px; overflow: hidden; }
+.big-stepper .cnt-btn { height: 64px; }
+.big-stepper .cnt { font-size: 2rem; }

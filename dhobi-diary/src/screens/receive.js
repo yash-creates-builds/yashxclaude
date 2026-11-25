@@ -69,6 +69,19 @@ function dateRow(b) {
   </div>`;
 }
 
+/** "Some": tap the number that came back (big buttons). Long lists fall back to a large − / + stepper. */
+function somePicker(k, add, rem) {
+  const max = rem - 1;
+  const body = max <= 12
+    ? `<div class="num-grid">${Array.from({ length: max }, (_, i) => i + 1).map((n) => `<button class="num tap ${add === n ? 'on' : ''}" data-act="set-some" data-k="${k}" data-n="${n}" aria-pressed="${add === n}">${n}</button>`).join('')}</div>`
+    : `<div class="big-stepper">
+        <button class="cnt-btn tap" data-act="dec" data-k="${k}" ${add > 1 ? '' : 'disabled'} aria-label="−1">${I.minus}</button>
+        <output class="cnt">${add}</output>
+        <button class="cnt-btn plus tap" data-act="inc" data-k="${k}" ${add < max ? '' : 'disabled'} aria-label="+1">${I.plus}</button>
+      </div>`;
+  return `<div class="some-pick"><b>${esc(t('howMany'))}</b><small>${esc(t('ofN', rem))}</small>${body}</div>`;
+}
+
 /** One item: ✓ came back · ✗ not back · Some (only when more than one is still out). */
 function row(b, l) {
   const k = lineKey(l);
@@ -87,12 +100,7 @@ function row(b, l) {
     <div class="rchoices ${rem > 1 ? 'three' : ''}">
       ${opt('yes', t('rcYes'), I.check)}${opt('no', t('rcNo'), I.close)}${rem > 1 ? opt('some', t('rcSome')) : ''}
     </div>
-    ${mode === 'some' ? `<div class="some-row"><span>${esc(t('got'))}</span>
-      <div class="counter small">
-        <button class="cnt-btn tap" data-act="dec" data-k="${k}" ${add > 1 ? '' : 'disabled'} aria-label="−1">${I.minus}</button>
-        <output class="cnt">${add}<small>/${rem}</small></output>
-        <button class="cnt-btn plus tap" data-act="inc" data-k="${k}" ${add < rem - 1 ? '' : 'disabled'} aria-label="+1">${I.plus}</button>
-      </div></div>` : ''}
+    ${mode === 'some' ? somePicker(k, add, rem) : ''}
   </div>`;
 }
 
@@ -157,6 +165,7 @@ screen('receiveBatch', {
     },
     inc(el) { const b = getBatch(R.id); const l = b.lines.find((x) => lineKey(x) === el.dataset.k); R.add[el.dataset.k] = Math.min(remaining(l) - 1, (R.add[el.dataset.k] || 0) + 1); haptic(); refresh(); },
     dec(el) { R.add[el.dataset.k] = Math.max(1, (R.add[el.dataset.k] || 0) - 1); haptic(); refresh(); },
+    'set-some'(el) { R.add[el.dataset.k] = Number(el.dataset.n); haptic(); refresh(); },
     'r-date'(el) { R.date = el.dataset.v; haptic(); refresh(); },
     'r-pick-date'(el) { if (el.value) { R.date = el.value; refresh(); } },
     save() { const b = getBatch(R.id); if (!leftToMark(b)) save(b); },

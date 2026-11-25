@@ -75,6 +75,7 @@ export default {
   givenThisMonth: 'Clothes given this month', withDhobiNow: 'Currently with dhobi', tapIfCame: 'Tap here if the dhobi came today', attendanceMarked: 'Attendance marked',
   rcYes: 'Came', rcNo: 'Not back', rcSome: 'Some', leftToMark: (n) => `Mark ${n} more`,
   receivedOf: (a, b) => `Received ${a} of ${b}`, cameBackOn: 'Came back on', alreadyBack: (n) => `${n} already back`, markAllCame: 'Mark all as came', notBackYet: (l) => `${l} not back yet`, backLog: 'Came back',
+  howMany: 'How many came back?', ofN: (n) => `out of ${n}`,
   chooseLang: 'Choose language',
   weekdays: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
   weekdayLetters: ['S', 'M', 'T', 'W', 'T', 'F', 'S'],

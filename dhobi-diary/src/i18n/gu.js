@@ -61,6 +61,7 @@ export default {
   givenThisMonth: 'આ મહિને આપેલાં કપડાં', withDhobiNow: 'હાલ ધોબી પાસે', tapIfCame: 'ધોબી આજે આવ્યો હોય તો અહીં દબાવો', attendanceMarked: 'હાજરી પુરાઈ ગઈ',
   rcYes: 'આવ્યાં', rcNo: 'નથી આવ્યાં', rcSome: 'થોડાં', leftToMark: (n) => `${n} વધુ પસંદ કરો`,
   receivedOf: (a, b) => `${b} માંથી ${a} આવ્યાં`, cameBackOn: 'કયા દિવસે પાછાં આવ્યાં', alreadyBack: (n) => `${n} પહેલાં આવી ગયાં`, markAllCame: 'બધાંને “આવ્યાં” કરો', notBackYet: (l) => `${l} હજી પાછાં નથી આવ્યાં`, backLog: 'પાછાં આવ્યાં',
+  howMany: 'કેટલાં પાછાં આવ્યાં?', ofN: (n) => `${n} માંથી`,
   chooseLang: 'ભાષા પસંદ કરો',
   weekdays: ['રવિ', 'સોમ', 'મંગળ', 'બુધ', 'ગુરુ', 'શુક્ર', 'શનિ'],
   weekdayLetters: ['ર', 'સો', 'મં', 'બુ', 'ગુ', 'શુ', 'શ'],
