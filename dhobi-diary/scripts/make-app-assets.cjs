@@ -15,11 +15,11 @@ const sized = (s, w) => s.replace('<svg ', `<svg width="${w}" height="${w}" `);
     await p.screenshot({ path: path.join(root, 'assets', file), omitBackground: true });
   };
   await shot('icon-only.png', 1024, sized(square, 1024));
-  await shot('icon-background.png', 1024, '<div style="width:1024px;height:1024px;background:#3F46A8"></div>');
+  await shot('icon-background.png', 1024, '<div style="width:1024px;height:1024px;background:#22D07B"></div>');
   // Foreground = artwork without the background square, scaled into Android's safe zone.
   await shot('icon-foreground.png', 1024, sized(square.replace(/<rect width="512" height="512"[^>]*\/>/, ''), 680));
-  await shot('splash.png', 2732, `<div style="width:2732px;height:2732px;background:#FBF7F0;display:grid;place-items:center">${sized(svg, 560)}</div>`);
-  await shot('splash-dark.png', 2732, `<div style="width:2732px;height:2732px;background:#1F1B2E;display:grid;place-items:center">${sized(svg, 560)}</div>`);
+  await shot('splash.png', 2732, `<div style="width:2732px;height:2732px;background:#F2F5F8;display:grid;place-items:center">${sized(svg, 560)}</div>`);
+  await shot('splash-dark.png', 2732, `<div style="width:2732px;height:2732px;background:#141414;display:grid;place-items:center">${sized(svg, 560)}</div>`);
   // Play Store icon (512×512, no transparency)
   fs.mkdirSync(path.join(root, 'store'), { recursive: true });
   await p.setViewportSize({ width: 512, height: 512 });

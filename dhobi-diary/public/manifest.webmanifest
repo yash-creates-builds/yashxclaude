@@ -3,7 +3,7 @@
   "short_name": "Dhobi Diary",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#FBF7F0",
-  "theme_color": "#FBF7F0",
+  "background_color": "#F2F5F8",
+  "theme_color": "#F2F5F8",
   "icons": [{ "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml" }]
 }

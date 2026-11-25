@@ -30,7 +30,7 @@ function attendButton(big = false) {
     </button>`;
   }
   return `<button class="${cls}" data-act="attend">
-    <span class="attend-ic">${I.hand}</span>
+    <span class="attend-ic">${I.thumbsUp}</span>
     <span class="attend-txt"><b>${esc(t('dhobiCame'))}</b><small>${esc(t('tapToMark'))}</small></span>
   </button>`;
 }
@@ -73,9 +73,9 @@ screen('home', {
       ${attendButton()}
 
       <section class="stats" aria-label="summary">
-        <div class="stat"><span>${esc(t('withDhobi'))}</span><b>${out}</b></div>
+        <div class="stat"><span><i class="key key-sky"></i>${esc(t('withDhobi'))}</span><b>${out}</b></div>
         <button class="stat stat-link tap" data-act="bill" aria-label="${esc(t('seeBill'))}"><span>${esc(t('thisMonth'))} ${I.next}</span><b>${money(bill.total)}</b></button>
-        <div class="stat ${missing ? 'stat-red' : ''}"><span>${esc(t('missing'))}</span><b>${missing}</b></div>
+        <div class="stat ${missing ? 'stat-red' : ''}"><span><i class="key key-red"></i>${esc(t('missing'))}</span><b>${missing}</b></div>
       </section>
 
       <button class="big-action give tap" data-act="give">

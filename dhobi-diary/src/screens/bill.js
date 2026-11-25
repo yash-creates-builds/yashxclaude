@@ -33,7 +33,9 @@ function calendar(list) {
   const todayD = monthOf(today()) === B.month ? Number(today().slice(8)) : 0;
   let cells = '<span class="cal-d blank"></span>'.repeat(lead);
   for (let d = 1; d <= days; d++) {
-    cells += `<span class="cal-d ${given.has(d) ? 'given' : ''} ${d === todayD ? 'today' : ''}">${d}${came.has(d) ? '<i></i>' : ''}</span>`;
+    const iso = `${B.month}-${String(d).padStart(2, '0')}`;
+    const past = iso < today() && !given.has(d) && !came.has(d);
+    cells += `<span class="cal-d ${given.has(d) ? 'given' : ''} ${came.has(d) ? 'came' : ''} ${past ? 'past' : ''} ${d === todayD ? 'today' : ''}">${d}</span>`;
   }
   return `<div class="cal">${heads}${cells}</div>
     <div class="cal-legend"><span><i class="lg-given"></i>${esc(t('dayGiven'))}</span><span><i class="lg-back"></i>${esc(t('dhobiCame'))}</span></div>`;
