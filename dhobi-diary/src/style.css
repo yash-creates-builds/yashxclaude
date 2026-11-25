@@ -512,3 +512,19 @@ button:disabled { cursor: default; }
 .tab { min-height: 52px; gap: 1px; font-size: .78rem; border-radius: 12px; }
 .tab .ic { width: 22px; height: 22px; }
 .snack { bottom: calc(env(safe-area-inset-bottom) + 74px); }
+
+/* Family seats */
+.seats { display: flex; flex-direction: column; gap: 8px; padding: 12px; margin: 4px 0; border-radius: 14px; background: var(--paper-2); }
+.seats-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.seats-head .label { margin: 0; }
+.seats-head b { font-weight: 500; font-size: 1.05rem; }
+.seats .btn { min-height: 56px; font-size: 1.05rem; }
+
+/* "Just count pieces": a normal grid tile, sky blue, last in the grid */
+.tile.tile-pieces { background: var(--sky); border-width: 2px; }
+.tile.tile-pieces .art .f { fill: #fff; }
+.tile.tile-pieces.on { background: var(--sky); box-shadow: inset 0 0 0 2px var(--ink); border-color: var(--ink); }
+.tile-pieces.on .art .f { fill: #fff; }
+.tile-pieces .counter { border-top-color: rgba(20, 20, 20, .25); }
+.tile-pieces .cnt-btn.plus, .tile-pieces.on .cnt-btn.plus { background: var(--ink); }
+.tile-hint { font-size: .8rem; color: var(--ink-2); }

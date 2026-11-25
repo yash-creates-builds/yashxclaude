@@ -15,7 +15,7 @@ function phone(server, initial, store = memStore()) {
 }
 
 test('create, join (merging both phones), live updates both ways', async () => {
-  const s = createFakeServer();
+  const s = createFakeServer({ seats: 5 });
   const A = phone(s, { batches: [batch('a1')] });
   const B = phone(s, { batches: [batch('b1')], visits: [{ id: 'v1', date: '2026-11-24', time: '09:00' }] });
   const { code } = await A.engine.create('Mummy');
@@ -38,7 +38,7 @@ test('create, join (merging both phones), live updates both ways', async () => {
 });
 
 test('offline changes wait in the outbox, survive a restart, and sync when back online', async () => {
-  const s = createFakeServer();
+  const s = createFakeServer({ seats: 5 });
   const A = phone(s);
   const store = memStore();
   const B = phone(s, {}, store);
@@ -68,7 +68,7 @@ test('offline changes wait in the outbox, survive a restart, and sync when back 
 });
 
 test('a pending local edit is not overwritten by the server copy', async () => {
-  const s = createFakeServer();
+  const s = createFakeServer({ seats: 5 });
   const A = phone(s, { batches: [batch('k', 1)] });
   const B = phone(s);
   const { code } = await A.engine.create('Mummy');
@@ -86,7 +86,7 @@ test('a pending local edit is not overwritten by the server copy', async () => {
 });
 
 test('leaving stops sync; outsiders see nothing', async () => {
-  const s = createFakeServer();
+  const s = createFakeServer({ seats: 5 });
   const A = phone(s, { batches: [batch('p')] });
   const B = phone(s);
   const { code } = await A.engine.create('Mummy');
@@ -99,4 +99,16 @@ test('leaving stops sync; outsiders see nothing', async () => {
   const C = s.client(); await C.auth.signInAnonymously();
   const { data } = await C.from('entries').select('*').eq('household_id', 'h1');
   assert.equal(data.length, 0);
+});
+
+test('a full family blocks new members until a seat is added', async () => {
+  const s = createFakeServer(); // 1 free seat
+  const A = phone(s);
+  const B = phone(s);
+  const { code, hid } = await A.engine.create('Mummy');
+  await assert.rejects(B.engine.join(code, 'Papa'), /family-full/);
+  s.addSeat(hid); // what the payment webhook does after ₹19 is paid
+  await B.engine.join(code, 'Papa');
+  await A.engine.pull();
+  assert.deepEqual(A.engine.state.members.map((m) => m.name).sort(), ['Mummy', 'Papa']);
 });

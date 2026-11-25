@@ -1,6 +1,6 @@
 // In-memory stand-in for the parts of Supabase the sync engine uses, with the same
 // access rules as supabase/migrations/001_dhobi_diary.sql (members only).
-export function createFakeServer() {
+export function createFakeServer({ seats = 1 } = {}) {
   const households = [];
   const members = [];
   const entries = new Map(); // `${hid}|${kind}|${id}` → row
@@ -29,7 +29,7 @@ export function createFakeServer() {
       if (name === 'create_household') {
         const hid = 'h' + (++n);
         const code = Math.random().toString(36).slice(2, 8).toUpperCase().replace(/[01IO]/g, 'X');
-        households.push({ id: hid, code });
+        households.push({ id: hid, code, seats });
         members.push({ household_id: hid, user_id: c.uid, name: args.p_name });
         return { data: [{ household_id: hid, code }], error: null };
       }
@@ -37,7 +37,10 @@ export function createFakeServer() {
         const code = args.p_code.toUpperCase().replace(/[^A-Z0-9]/g, '');
         const h = households.find((x) => x.code === code);
         if (!h) return { data: [], error: null };
-        if (!isMember(h.id, c.uid)) members.push({ household_id: h.id, user_id: c.uid, name: args.p_name });
+        if (!isMember(h.id, c.uid)) {
+          if (members.filter((m) => m.household_id === h.id).length >= h.seats) return { data: null, error: { code: 'P0001', message: 'family-full' } };
+          members.push({ household_id: h.id, user_id: c.uid, name: args.p_name });
+        }
         broadcast('members', { household_id: h.id });
         return { data: [{ household_id: h.id, code }], error: null };
       }
@@ -92,7 +95,8 @@ export function createFakeServer() {
     c.removeChannel = (ch) => { for (const s of ch._mine) { const i = subs.indexOf(s); if (i >= 0) subs.splice(i, 1); } };
     return c;
   }
-  return { client, entries, members };
+  const addSeat = (hid) => { households.find((h) => h.id === hid).seats += 1; };
+  return { client, entries, members, addSeat };
 }
 
 /** A phone's diary (the parts the engine needs). */

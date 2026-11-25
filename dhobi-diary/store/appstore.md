@@ -42,6 +42,7 @@ MADE FOR EVERY FAMILY
 • Grandma Mode: only Give, Receive and Bill, extra large.
 • More than one dhobi? No problem.
 • Undo, Excel (CSV) export and backup file.
+• Family diary: one diary on every phone at home. First person free, ₹19 one time for each extra person.
 
 PRIVATE
 • Works offline. No sign-up. No ads. Free.
@@ -57,7 +58,7 @@ PRIVATE
 
 ## App Privacy ("nutrition label")
 - Today (family sharing off): **Data Not Collected**.
-- Once family sharing is switched on, change to: **User Content → Other User Content** and **Contact Info → Name**. Both are *not linked to identity* and *not used for tracking*, purpose *App Functionality*.
+- Once family sharing is switched on, change to: **User Content → Other User Content**, **Contact Info → Name** and **Purchases → Purchase History**. Both are *not linked to identity* and *not used for tracking*, purpose *App Functionality*.
 
 ## Screenshots
 - iPhone 6.9" (1290 × 2796): `store/appstore-iphone-6.9-1…5-*.png`, upload all 5 in order.

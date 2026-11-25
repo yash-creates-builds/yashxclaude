@@ -7,7 +7,7 @@ export default {
   i_shirt: 'Shirt', i_tshirt: 'T-shirt', i_pant: 'Pant', i_jeans: 'Jeans', i_kurta: 'Kurta', i_saree: 'Saree',
   i_salwar: 'Salwar suit', i_dupatta: 'Dupatta', i_bedsheet: 'Bedsheet', i_pillow: 'Pillow cover', i_towel: 'Towel',
   i_blouse: 'Blouse', i_kids: 'Kids clothes', i_blazer: 'Blazer', i_sherwani: 'Sherwani / Lehenga', i_curtain: 'Curtain',
-  i_other: 'Other',
+  i_other: 'Other', i_pieces: 'Just count pieces', piecesHint: 'No need to pick the type',
   // nav
   nav_home: 'Home', nav_history: 'History', nav_bill: 'Bill', nav_more: 'Settings',
   // home
@@ -76,6 +76,7 @@ export default {
   rcYes: 'Came', rcNo: 'Not back', rcSome: 'Some', leftToMark: (n) => `Mark ${n} more`,
   receivedOf: (a, b) => `Received ${a} of ${b}`, cameBackOn: 'Came back on', alreadyBack: (n) => `${n} already back`, markAllCame: 'Mark all as came', notBackYet: (l) => `${l} not back yet`, backLog: 'Came back',
   howMany: 'How many came back?', ofN: (n) => `out of ${n}`,
+  seatsTitle: 'Seats', seatsUsed: (u, n) => `${u} of ${n} used`, seatsRule: 'First person is free. ₹19 for each extra person, one time.', addSeat: 'Add a person · ₹19', familyFull: 'This family is full. Ask someone in the family to add a seat (₹19).', seatAdded: 'Seat added. Send the code to the new person.', seatPending: 'Payment received. The seat will appear in a minute.', payFailed: 'Payment did not go through. Please try again.', paymentsSoon: 'Payments will be switched on soon.',
   chooseLang: 'Choose language',
   weekdays: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
   weekdayLetters: ['S', 'M', 'T', 'W', 'T', 'F', 'S'],
