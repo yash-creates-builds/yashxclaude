@@ -44,13 +44,13 @@ function summary() {
 
 function langChip() {
   const l = LANGS.find((x) => x.id === getLang());
-  return `<button class="chip-lang tap" data-act="lang" aria-label="${esc(t('language'))}">${I.lang}<span>${esc(l.label)}</span></button>`;
+  return `<button class="chip-lang tap" data-act="lang" aria-label="${esc(t('language'))}">${I.lang}<span>${esc(l.short)}</span></button>`;
 }
 
 function grandmaHome() {
   const { out, bill } = summary();
   return `<main class="screen home grandma-home">
-    <header class="home-head"><h1 class="brand">${esc(t('appName'))}</h1>${langChip()}</header>
+    <header class="home-head"><div class="home-id"><img class="home-icon" src="${import.meta.env.BASE_URL}icon-192.png" alt="" width="48" height="48"><h1 class="brand">${esc(t('appName'))}</h1></div>${langChip()}</header>
     ${syncChip()}
     ${attendButton(true)}
     <button class="mega mega-give tap" data-act="give">${I.give}<span>${esc(t('give'))}</span></button>
@@ -66,7 +66,7 @@ screen('home', {
     const { open, out, missing, bill } = summary();
     const givenThisMonth = bill.list.reduce((s, b) => s + givenCount(b), 0);
     return `<main class="screen home">
-      <header class="home-head"><h1 class="brand"><span class="home-date">${esc(fmtDate(today(), { weekday: 'long', day: 'numeric', month: 'long' }))}</span>${esc(t('appName'))}</h1>${langChip()}</header>
+      <header class="home-head"><div class="home-id"><img class="home-icon" src="${import.meta.env.BASE_URL}icon-192.png" alt="" width="48" height="48"><h1 class="brand"><span class="home-date">${esc(fmtDate(today(), { weekday: 'short', day: 'numeric', month: 'short' }))}</span>${esc(t('appName'))}</h1></div>${langChip()}</header>
       ${syncChip()}
       ${attendButton()}
 

@@ -69,7 +69,7 @@ export function snack(text, { canUndo = false, tone = '' } = {}) {
   // Sit above the tab bar / footer only when there is one.
   requestAnimationFrame(() => { el.classList.toggle('low', !document.querySelector('#app .tabbar, #app .footer-bar')); });
   el.className = `snack show ${tone}`;
-  el.innerHTML = `<span>${esc(text)}</span>${canUndo ? `<button class="snack-undo tap" id="snack-undo">${esc(t('undo'))}</button>` : ''}`;
+  el.innerHTML = `<span class="snack-ic">${tone === 'red' ? I.alert : I.check}</span><span class="snack-txt">${esc(text)}</span>${canUndo ? `<button class="snack-undo tap" id="snack-undo">${esc(t('undo'))}</button>` : ''}`;
   el.querySelector('#snack-undo')?.addEventListener('click', () => {
     haptic('medium');
     if (undo()) { snack(t('undo') + ' ✓'); refresh(); }
