@@ -4,8 +4,8 @@
 //   supabaseAnonKey = "anon public" key       (safe to ship in the app: the database rules protect the data)
 // Full steps: README.md → "Family diary setup (Supabase)".
 // Leave as null to ship without family sharing; the app works fully offline either way.
-export const supabaseUrl = null;
-export const supabaseAnonKey = null;
+export const supabaseUrl = 'https://jlwdcolcjqlafattebcr.supabase.co';
+export const supabaseAnonKey = 'sb_publishable_dIjTB5oLCNUffdCYSUZq4A_RSKrTjED'; // publishable (public) key
 
 export const familyAvailable = () => !!(supabaseUrl && supabaseAnonKey);
 
