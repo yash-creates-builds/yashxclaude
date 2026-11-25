@@ -21,6 +21,8 @@ export const I = {
   give: s('<path d="M12 20V8"/><path d="m7 12 5-5 5 5"/><path d="M4 4h16"/>', 'stroke-width="2.4"'),
   receive: s('<path d="M12 4v12"/><path d="m7 11 5 5 5-5"/><path d="M4 20h16"/>', 'stroke-width="2.4"'),
   lang: s('<path d="M4 5h9M8.5 3v2M6 5c.5 3 2.5 6 6 7.5M11 5c-.8 3.5-3 6.5-7 8"/><path d="m13 21 4-9 4 9M14.5 17.5h5"/>'),
+  // raised hand = "present!" (attendance)
+  hand: s('<path d="M8 13V5.5a1.5 1.5 0 0 1 3 0V11"/><path d="M11 10.5V4a1.5 1.5 0 0 1 3 0v6.5"/><path d="M14 10.5V5.5a1.5 1.5 0 0 1 3 0V13"/><path d="M17 9.5a1.5 1.5 0 0 1 3 0V14a7 7 0 0 1-7 7h-1a6 6 0 0 1-5-2.7L4 14.5a1.6 1.6 0 0 1 2.6-1.8L8 14.5"/>'),
   user: s('<circle cx="12" cy="8" r="4"/><path d="M4 21c1-4.5 4.5-6.5 8-6.5s7 2 8 6.5"/>'),
   calendar: s('<rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/>'),
   download: s('<path d="M12 4v11"/><path d="m7.5 10.5 4.5 4.5 4.5-4.5"/><path d="M5 20h14"/>'),

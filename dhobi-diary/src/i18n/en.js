@@ -71,6 +71,7 @@ export default {
   needInternet: 'Needs internet to connect. Try again when online.', familyNotSetUp: 'Family sharing is not switched on in this version yet.',
   joined: 'Joined the family diary', created: 'Family diary ready', connecting: 'Connecting…', codeHint: 'Give this code to everyone at home',
   people: (n) => `${n} ${n === 1 ? 'person' : 'people'}`, next: 'Continue',
+  markedToday: 'Dhobi came today', tapToMark: 'Tap here when the dhobi comes', tapToSee: 'see all visits',
   chooseLang: 'Choose language',
   weekdays: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
   weekdayLetters: ['S', 'M', 'T', 'W', 'T', 'F', 'S'],

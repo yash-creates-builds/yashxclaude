@@ -409,3 +409,21 @@ button:disabled { cursor: default; }
 .busy { display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 28px 0; font-weight: 500; }
 .spinner { width: 44px; height: 44px; border-radius: 99px; border: 4px solid var(--indigo-100); border-top-color: var(--indigo); animation: spin .8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* ------------------------------------------------------------ attendance button (top of home) */
+.attend { display: flex; align-items: center; gap: 16px; width: 100%; min-height: 108px; margin-bottom: 14px; padding: 16px 18px; border-radius: var(--radius); background: var(--ink); color: var(--paper); text-align: left; border: 2px solid var(--ink); }
+.attend-ic { width: 72px; height: 72px; flex: none; display: grid; place-items: center; border-radius: 99px; background: var(--paper); color: var(--ink); }
+.attend-ic .ic { width: 40px; height: 40px; }
+.attend-txt { display: flex; flex-direction: column; gap: 4px; }
+.attend-txt b { font-size: 1.6rem; font-weight: 500; letter-spacing: -.025em; line-height: 1.05; }
+.attend-txt small { font-size: 1rem; opacity: .85; }
+.attend.done { background: var(--green-50); color: var(--green); border-color: var(--green); min-height: 84px; }
+.attend.done .attend-ic { width: 52px; height: 52px; background: var(--green); color: #fff; }
+.attend.done .attend-ic .ic { width: 28px; height: 28px; }
+.attend.done .attend-txt b { font-size: 1.3rem; }
+.attend-big { min-height: 22vh; flex-direction: column; justify-content: center; text-align: center; margin: 0; border-radius: 28px; border-width: 3px; }
+.attend-big .attend-txt { align-items: center; }
+.attend-big .attend-txt b { font-size: 2rem; }
+.stat-link { text-align: left; font: inherit; color: inherit; background: none; }
+.stat-link span { display: inline-flex; align-items: center; gap: 2px; color: var(--indigo) !important; }
+.stat-link span .ic { width: 1em; height: 1em; }
