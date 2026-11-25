@@ -1,8 +1,8 @@
-// Anek (Ek Type): one superfamily drawn for Latin, Devanagari and Gujarati, with a width axis.
-// Condensed widths for headings + numbers, normal width for reading. Bundled = works offline.
-import '@fontsource-variable/anek-latin/wdth.css';
-import '@fontsource-variable/anek-devanagari/wdth.css';
-import '@fontsource-variable/anek-gujarati/wdth.css';
+// Instrument Sans for Latin, Noto Sans for Hindi + Gujarati (neutral, same proportions).
+// Bundled with the app, so they work offline.
+import '@fontsource-variable/instrument-sans';
+import '@fontsource-variable/noto-sans-devanagari';
+import '@fontsource-variable/noto-sans-gujarati';
 import './style.css';
 
 import { initDB, getDB } from './core/db.js';

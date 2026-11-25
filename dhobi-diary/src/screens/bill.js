@@ -96,10 +96,11 @@ screen('bill', {
         <b class="total-amt">${money(bill.total)}</b>
         <span class="total-sub">${esc(t('items', bill.items))}${bill.pendingItems ? ` · ${esc(t('billPendingLine', bill.pendingItems))}` : ''}</span>
         ${bill.missingItems ? `<span class="pill pill-red">${I.alert}${esc(t('billMissingLine', bill.missingItems))}</span>` : ''}
+        ${paid ? `<span class="stamp">${I.check}${esc(t('paid'))}</span>` : ''}
         <div class="rc-rows">
           ${SERVICES.map((s) => `<div class="rc-row ${bill.byService[s].qty ? '' : 'zero'}">${I[s]}<span>${esc(serviceName(s))}</span><i></i><span class="q">${bill.byService[s].qty} ×</span><b>${money(bill.byService[s].amount)}</b></div>`).join('')}
         </div>
-      </section></div>${paid ? `<span class="stamp">${I.check}${esc(t('paid'))}</span>` : ''}</div>
+      </section></div></div>
 
       ${bill.list.length ? `
         <div class="stack">
