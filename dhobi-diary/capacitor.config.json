@@ -1,6 +1,6 @@
 {
-  "appId": "com.dhobikhata.app",
-  "appName": "Dhobi Khata",
+  "appId": "com.dhobidiary.app",
+  "appName": "Dhobi Diary",
   "webDir": "dist",
   "android": {
     "webContentsDebuggingEnabled": false

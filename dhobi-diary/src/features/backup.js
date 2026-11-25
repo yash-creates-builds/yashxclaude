@@ -29,11 +29,11 @@ export function buildCSV({ itemName, serviceName, dhobiName, statusName }) {
   return '﻿' + rows.map((r) => r.map(csvCell).join(',')).join('\n');
 }
 
-export const exportCSV = (names) => shareFile(`dhobi-khata-${today()}.csv`, buildCSV(names), 'text/csv');
+export const exportCSV = (names) => shareFile(`dhobi-diary-${today()}.csv`, buildCSV(names), 'text/csv');
 
 export function backupJSON() {
   const data = { app: 'dhobi-diary', exportedAt: new Date().toISOString(), ...exportData() };
-  return shareFile(`dhobi-khata-backup-${today()}.json`, JSON.stringify(data, null, 1), 'application/json');
+  return shareFile(`dhobi-diary-backup-${today()}.json`, JSON.stringify(data, null, 1), 'application/json');
 }
 
 /** Reads a file the user picks. Returns the parsed backup (not yet applied), or null if cancelled. */
