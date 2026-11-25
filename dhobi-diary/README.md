@@ -12,7 +12,7 @@ Replaces the paper diary families use to track clothes given to the dhobi.
 | Android app (opens Android Studio) | `npm run app:android` |
 | iPhone app (opens Xcode, Mac only) | `npm run app:ios` |
 | Copy latest code into both apps | `npm run app:sync` |
-| Re-make app icons from `public/icon.svg` | `npm run app:icons` |
+| Re-make app icons from `design/iron-cutout.png` (needs Python + Pillow) | `npm run app:icons` |
 
 App ID: `com.dhobikhata.app` (in `capacitor.config.json`). **Pick your final ID before the first store upload — it can never change after.**
 

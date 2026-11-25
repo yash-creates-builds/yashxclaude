@@ -124,7 +124,7 @@ screen('more', {
 screen('welcome', {
   view() {
     return `<main class="screen welcome">
-      <div class="welcome-art">${I.bill}</div>
+      <img class="welcome-icon" src="${import.meta.env.BASE_URL}icon-192.png" alt="" width="120" height="120">
       <h1 class="brand big">Dhobi Khata</h1>
       <p class="welcome-sub">धोबी खाता · ધોબી ખાતું</p>
       <div class="stack">${LANGS.map((l) => `<button class="btn btn-outline btn-lang tap" data-act="pick" data-id="${l.id}" lang="${l.id}">${esc(l.label)}</button>`).join('')}</div>
