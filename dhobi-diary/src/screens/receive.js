@@ -29,30 +29,43 @@ screen('receive', {
 });
 
 /* -------------------------------------------------------------- one bundle */
-let R = null; // { id, got: { key: qty } }
+let R = null; // { id, got: { key: qty }, mode: { key: 'yes' | 'no' | 'some' | null } }
+
+const decided = (b) => b.lines.every((l) => R.mode[lineKey(l)]);
+const leftToMark = (b) => b.lines.filter((l) => !R.mode[lineKey(l)]).length;
 
 const missingNow = (b) => b.lines
+  .filter((l) => R.mode[lineKey(l)])
   .map((l) => ({ l, miss: l.qty - (R.got[lineKey(l)] ?? 0) }))
   .filter((x) => x.miss > 0);
 
 function liveAlert(b) {
   const miss = missingNow(b);
-  if (!miss.length) return `<div class="alert alert-ok" id="recv-alert">${I.check}<span>${esc(t('allBack'))}</span></div>`;
+  if (!miss.length) return decided(b) ? `<div class="alert alert-ok" id="recv-alert">${I.check}<span>${esc(t('allBack'))}</span></div>` : '';
   const list = miss.map((x) => `${x.miss} ${itemName(x.l.itemId)}`).join(', ');
   return `<div class="alert alert-red" id="recv-alert" role="alert">${I.alert}<span>${esc(t('missingAlert', list))}</span></div>`;
 }
 
+/** One item: ✓ came back · ✗ not back · Some (only when more than one was given). */
 function row(b, l) {
   const k = lineKey(l);
+  const mode = R.mode[k];
   const got = R.got[k] ?? 0;
-  return `<div class="rrow ${got < l.qty ? 'short' : ''}" id="r-${k.replace('|', '-')}">
-    <span class="rrow-art">${itemArt(l.itemId)}</span>
-    <span class="rrow-name"><b>${esc(itemName(l.itemId))}</b><small>${esc(serviceName(l.service))} · ${esc(t('given'))} ${l.qty}</small></span>
-    <div class="counter small">
-      <button class="cnt-btn tap" data-act="dec" data-k="${k}" ${got ? '' : 'disabled'} aria-label="−1">${I.minus}</button>
-      <output class="cnt">${got}<small>/${l.qty}</small></output>
-      <button class="cnt-btn plus tap" data-act="inc" data-k="${k}" ${got < l.qty ? '' : 'disabled'} aria-label="+1">${I.plus}</button>
+  const opt = (m, label, icon = '') => `<button class="rchoice rc-${m} tap ${mode === m ? 'on' : ''}" data-act="pick-mode" data-k="${k}" data-m="${m}" aria-pressed="${mode === m}">${icon}<span>${esc(label)}</span></button>`;
+  return `<div class="rrow2 ${mode ? 'is-' + mode : ''}">
+    <div class="rrow2-top">
+      <span class="rrow-art">${itemArt(l.itemId)}</span>
+      <span class="rrow-name"><b>${esc(itemName(l.itemId))}</b><small>${esc(serviceName(l.service))} · ${esc(t('given'))} ${l.qty}</small></span>
     </div>
+    <div class="rchoices ${l.qty > 1 ? 'three' : ''}">
+      ${opt('yes', t('rcYes'), I.check)}${opt('no', t('rcNo'), I.close)}${l.qty > 1 ? opt('some', t('rcSome')) : ''}
+    </div>
+    ${mode === 'some' ? `<div class="some-row"><span>${esc(t('got'))}</span>
+      <div class="counter small">
+        <button class="cnt-btn tap" data-act="dec" data-k="${k}" ${got > 1 ? '' : 'disabled'} aria-label="−1">${I.minus}</button>
+        <output class="cnt">${got}<small>/${l.qty}</small></output>
+        <button class="cnt-btn plus tap" data-act="inc" data-k="${k}" ${got < l.qty - 1 ? '' : 'disabled'} aria-label="+1">${I.plus}</button>
+      </div></div>` : ''}
   </div>`;
 }
 
@@ -69,12 +82,20 @@ screen('receiveBatch', {
   onEnter({ id }) {
     const b = getBatch(id);
     if (!b) return;
-    // Start from "everything came back" — the common case. Partial bundles start from what was saved.
-    R = { id, got: Object.fromEntries(b.lines.map((l) => [lineKey(l), b.received ? receivedQty(b, l) : l.qty])) };
+    // New bundle: nothing marked yet. A partly received bundle starts from what was saved.
+    R = { id, got: {}, mode: {} };
+    for (const l of b.lines) {
+      const k = lineKey(l);
+      if (!b.received) { R.got[k] = 0; R.mode[k] = null; continue; }
+      const g = receivedQty(b, l);
+      R.got[k] = g;
+      R.mode[k] = g >= l.qty ? 'yes' : g === 0 ? 'no' : 'some';
+    }
   },
   view({ id }) {
     const b = getBatch(id);
     if (!b) return `<main class="screen">${topBar(t('receiveTitle'))}${empty(t('noResults'))}</main>`;
+    const left = leftToMark(b);
     return `<main class="screen">
       ${topBar(t('receiveTitle'))}
       <p class="batch-head">${I.calendar}<b>${esc(fmtDate(b.date, { weekday: 'short', day: 'numeric', month: 'long' }))}</b> · ${esc(dhobiName(b.dhobiId))}</p>
@@ -87,17 +108,27 @@ screen('receiveBatch', {
       <h2 class="section-title">${esc(t('adjust'))}</h2>
       <div class="rlist">${b.lines.map((l) => row(b, l)).join('')}</div>
       ${liveAlert(b)}
-      <div class="footer-bar"><button class="btn btn-primary tap" data-act="save">${I.check}${esc(t('saveReceived'))}</button></div>
+      <div class="footer-bar"><button class="btn btn-primary tap" data-act="save" ${left ? 'disabled' : ''}>${left ? esc(t('leftToMark', left)) : `${I.check}${esc(t('saveReceived'))}`}</button></div>
     </main>`;
   },
   actions: {
     all() {
       const b = getBatch(R.id);
-      for (const l of b.lines) R.got[lineKey(l)] = l.qty;
+      for (const l of b.lines) { R.got[lineKey(l)] = l.qty; R.mode[lineKey(l)] = 'yes'; }
       save(b);
     },
-    inc(el) { const b = getBatch(R.id); const l = b.lines.find((x) => lineKey(x) === el.dataset.k); R.got[el.dataset.k] = Math.min(l.qty, (R.got[el.dataset.k] ?? 0) + 1); haptic(); refresh(); },
-    dec(el) { R.got[el.dataset.k] = Math.max(0, (R.got[el.dataset.k] ?? 0) - 1); haptic(); refresh(); },
-    save() { save(getBatch(R.id)); },
+    'pick-mode'(el) {
+      const b = getBatch(R.id);
+      const k = el.dataset.k;
+      const l = b.lines.find((x) => lineKey(x) === k);
+      const m = el.dataset.m;
+      R.mode[k] = m;
+      R.got[k] = m === 'yes' ? l.qty : m === 'no' ? 0 : Math.max(1, l.qty - 1);
+      if (m === 'no') hapticWarning(); else haptic();
+      refresh();
+    },
+    inc(el) { const b = getBatch(R.id); const l = b.lines.find((x) => lineKey(x) === el.dataset.k); R.got[el.dataset.k] = Math.min(l.qty - 1, (R.got[el.dataset.k] ?? 0) + 1); haptic(); refresh(); },
+    dec(el) { R.got[el.dataset.k] = Math.max(1, (R.got[el.dataset.k] ?? 0) - 1); haptic(); refresh(); },
+    save() { const b = getBatch(R.id); if (decided(b)) save(b); },
   },
 });

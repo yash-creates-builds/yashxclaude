@@ -27,7 +27,7 @@ export default {
   note: 'Note (optional)',
   // receive
   receiveTitle: 'Receive clothes', pickBatch: 'Which bundle came back?', noPendingToReceive: 'Nothing is with the dhobi right now.',
-  allReceived: 'All received', adjust: 'Count each item', given: 'Given', got: 'Got',
+  allReceived: 'All received', adjust: 'Mark each item', given: 'Given', got: 'Got',
   saveReceived: 'Save', missingAlert: (list) => `${list} missing`, missingTitle: 'Some clothes did not come back',
   allBack: 'All clothes are back',
   // batch
@@ -73,6 +73,7 @@ export default {
   people: (n) => `${n} ${n === 1 ? 'person' : 'people'}`, next: 'Continue',
   markedToday: 'Dhobi came today', tapToMark: 'Tap here when the dhobi comes', tapToSee: 'see all visits',
   givenThisMonth: 'Clothes given this month', withDhobiNow: 'Currently with dhobi', tapIfCame: 'Tap here if the dhobi came today', attendanceMarked: 'Attendance marked',
+  rcYes: 'Came', rcNo: 'Not back', rcSome: 'Some', leftToMark: (n) => `Mark ${n} more`,
   chooseLang: 'Choose language',
   weekdays: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
   weekdayLetters: ['S', 'M', 'T', 'W', 'T', 'F', 'S'],

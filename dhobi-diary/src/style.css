@@ -436,3 +436,20 @@ button:disabled { cursor: default; }
 .action-pair .big-action { flex-direction: column; align-items: flex-start; justify-content: space-between; gap: 14px; min-height: 168px; margin: 0; padding: 16px; }
 .action-pair .big-txt b { font-size: 1.3rem; }
 .action-pair .big-txt small { font-size: .85rem; }
+
+/* Receive: one card per item with ✓ / ✗ / Some */
+.rrow2 { display: flex; flex-direction: column; gap: 10px; padding: 12px; border-radius: var(--radius-s); border: 1.5px solid var(--ink); background: var(--paper); }
+.rrow2.is-yes { background: var(--green-50); }
+.rrow2.is-no { background: var(--red-50); border-color: var(--red); }
+.rrow2.is-some { background: var(--amber-50); }
+.rrow2-top { display: flex; align-items: center; gap: 10px; }
+.rchoices { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.rchoices.three { grid-template-columns: 1fr 1fr 1fr; }
+.rchoice { display: flex; align-items: center; justify-content: center; gap: 6px; min-height: var(--tap); border-radius: 12px; border: 1.5px solid var(--ink); background: var(--paper); font-weight: 500; font-size: 1.05rem; line-height: 1.1; padding: 4px 6px; text-align: center; }
+.rchoice .ic { width: 1.4em; height: 1.4em; }
+.rc-yes.on { background: var(--go); }
+.rc-no.on { background: var(--red); color: #fff; border-color: var(--red); }
+.rc-some.on { background: var(--sky); }
+.some-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-weight: 500; }
+.rchoices.three .rchoice { font-size: .95rem; gap: 4px; }
+.rchoices.three .rchoice .ic { width: 1.2em; height: 1.2em; }
