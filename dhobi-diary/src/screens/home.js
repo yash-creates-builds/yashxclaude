@@ -23,16 +23,13 @@ export function syncChip() {
 function attendButton(big = false) {
   const v = sortedVisits().find((x) => x.date === today());
   const cls = `attend ${big ? 'attend-big' : ''} tap`;
+  // Text only, no icons: the whole button is the message.
   if (v) {
     return `<button class="${cls} done" data-act="visits">
-      <span class="attend-ic">${I.check}</span>
-      <span class="attend-txt"><b>${esc(t('markedToday'))}</b><small>${esc(fmtTime(v.time))} · ${esc(t('tapToSee'))}</small></span>
+      <b>${esc(t('attendanceMarked'))}</b><small>${esc(fmtTime(v.time))}</small>
     </button>`;
   }
-  return `<button class="${cls}" data-act="attend">
-    <span class="attend-ic">${I.thumbsUp}</span>
-    <span class="attend-txt"><b>${esc(t('dhobiCame'))}</b><small>${esc(t('tapToMark'))}</small></span>
-  </button>`;
+  return `<button class="${cls}" data-act="attend"><b>${esc(t('tapIfCame'))}</b></button>`;
 }
 
 function summary() {
