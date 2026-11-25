@@ -1,10 +1,10 @@
 import { screen, go } from '../ui/router.js';
-import { t, money, LANGS, getLang } from '../i18n/index.js';
+import { t, money, LANGS, getLang, fmtDate } from '../i18n/index.js';
 import { I } from '../ui/icons.js';
 import { esc, batchCard, tabBar } from '../ui/kit.js';
 import { getDB } from '../core/db.js';
 import { statusOf, givenCount, receivedCount, monthBill, missingOf } from '../core/calc.js';
-import { thisMonth } from '../core/dates.js';
+import { thisMonth, today } from '../core/dates.js';
 import { openLangSheet } from './settings.js';
 
 function summary() {
@@ -38,7 +38,7 @@ screen('home', {
     if (getDB().settings.grandma) return grandmaHome();
     const { open, out, missing, bill } = summary();
     return `<main class="screen home">
-      <header class="home-head"><h1 class="brand">${esc(t('appName'))}</h1>${langChip()}</header>
+      <header class="home-head"><h1 class="brand"><span class="home-date">${esc(fmtDate(today(), { weekday: 'long', day: 'numeric', month: 'long' }))}</span>${esc(t('appName'))}</h1>${langChip()}</header>
 
       <section class="stats" aria-label="summary">
         <div class="stat"><span>${esc(t('withDhobi'))}</span><b>${out}</b></div>

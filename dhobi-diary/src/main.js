@@ -1,6 +1,8 @@
-import '@fontsource/archivo/600.css';
-import '@fontsource/archivo/800.css';
-import '@fontsource/archivo/900.css';
+// Anek (Ek Type): one superfamily drawn for Latin, Devanagari and Gujarati, with a width axis.
+// Condensed widths for headings + numbers, normal width for reading. Bundled = works offline.
+import '@fontsource-variable/anek-latin/wdth.css';
+import '@fontsource-variable/anek-devanagari/wdth.css';
+import '@fontsource-variable/anek-gujarati/wdth.css';
 import './style.css';
 
 import { initDB, getDB } from './core/db.js';

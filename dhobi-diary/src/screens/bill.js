@@ -91,17 +91,15 @@ screen('bill', {
         ${db.dhobis.map((d) => `<button class="chip tap ${B.dhobi === d.id ? 'on' : ''}" data-act="dhobi" data-id="${d.id}">${esc(dhobiName(d.id))}</button>`).join('')}
       </div>` : ''}
 
-      <section class="total-card ${paid ? 'is-paid' : ''}">
+      <div class="bill-top"><div class="receipt-wrap"><section class="receipt">
         <span class="total-label">${esc(t('amount'))}</span>
         <b class="total-amt">${money(bill.total)}</b>
         <span class="total-sub">${esc(t('items', bill.items))}${bill.pendingItems ? ` · ${esc(t('billPendingLine', bill.pendingItems))}` : ''}</span>
         ${bill.missingItems ? `<span class="pill pill-red">${I.alert}${esc(t('billMissingLine', bill.missingItems))}</span>` : ''}
-        ${paid ? `<span class="stamp">${I.check}${esc(t('paid'))}</span>` : ''}
-      </section>
-
-      <div class="svc-table">
-        ${SERVICES.map((s) => `<div class="svc"><span class="svc-ic">${I[s]}</span><span class="svc-name">${esc(serviceName(s))}</span><span class="svc-q">${bill.byService[s].qty}</span><b>${money(bill.byService[s].amount)}</b></div>`).join('')}
-      </div>
+        <div class="rc-rows">
+          ${SERVICES.map((s) => `<div class="rc-row ${bill.byService[s].qty ? '' : 'zero'}">${I[s]}<span>${esc(serviceName(s))}</span><i></i><span class="q">${bill.byService[s].qty} ×</span><b>${money(bill.byService[s].amount)}</b></div>`).join('')}
+        </div>
+      </section></div>${paid ? `<span class="stamp">${I.check}${esc(t('paid'))}</span>` : ''}</div>
 
       ${bill.list.length ? `
         <div class="stack">
