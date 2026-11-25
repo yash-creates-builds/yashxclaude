@@ -14,7 +14,33 @@ function busySheet() {
 }
 
 function errorText(e) {
-  return String(e?.message).includes('bad-code') ? t('badCode') : t('needInternet');
+  const m = String(e?.message);
+  if (m.includes('bad-code')) return t('badCode');
+  if (m.includes('family-full')) return t('familyFull');
+  return t('needInternet');
+}
+
+/* Seats are fetched from the server and cached here; the card redraws when they arrive. */
+let seatInfo = null;
+let seatLoading = false;
+function loadSeats() {
+  if (seatLoading) return;
+  seatLoading = true;
+  family.seats().then((s) => { seatInfo = s; }).catch(() => {}).finally(() => { seatLoading = false; refresh(); });
+}
+
+function seatBlock() {
+  if (!seatInfo) { loadSeats(); return `<div class="seats"><span class="label">${esc(t('seatsTitle'))}</span><small class="muted">…</small></div>`; }
+  const { used, total } = seatInfo;
+  const pct = Math.min(100, Math.round((used / total) * 100));
+  const ready = family.paymentsReady();
+  return `<div class="seats">
+    <div class="seats-head"><span class="label">${esc(t('seatsTitle'))}</span><b>${esc(t('seatsUsed', used, total))}</b></div>
+    <span class="recv-bar"><i style="width:${pct}%"></i></span>
+    <small class="muted">${esc(t('seatsRule'))}</small>
+    <button class="btn ${used >= total ? 'btn-primary' : 'btn-outline'} tap" data-act="fam-buy" ${ready ? '' : 'disabled'}>${I.plus}${esc(t('addSeat'))}</button>
+    ${ready ? '' : `<small class="muted">${esc(t('paymentsSoon'))}</small>`}
+  </div>`;
 }
 
 export function familyCard() {
@@ -35,6 +61,7 @@ export function familyCard() {
     <div class="code-row"><b class="fam-code">${esc(spaced(s.family.code))}</b>
       <button class="btn btn-outline btn-small tap" data-act="fam-share">${I.share}${esc(t('shareCode'))}</button></div>
     <small class="muted">${esc(t('codeHint'))}</small>
+    ${seatBlock()}
     <span class="label">${esc(t('members'))}</span>
     <div class="people">${(st.members.length ? st.members : [{ uid: me, name: s.userName }]).map((m) => `
       <span class="person ${m.uid === me ? 'me' : ''}"><i>${esc((m.name || '?').slice(0, 1).toUpperCase())}</i>${esc(m.name || '?')}${m.uid === me ? ` <small>(${esc(t('you'))})</small>` : ''}</span>`).join('')}</div>
@@ -110,6 +137,20 @@ export const familyActions = {
     const r = await shareText(t('familyCode'), t('shareCodeText', spaced(code)));
     if (r === 'copied') snack('✓ Copied');
   },
+  async 'fam-buy'() {
+    if (!family.paymentsReady()) return;
+    busySheet();
+    try {
+      const r = await family.buySeat();
+      closeSheet();
+      if (r.status === 'added') { seatInfo = r.seats; hapticSuccess(); snack(t('seatAdded')); }
+      else if (r.status === 'pending') snack(t('seatPending'));
+      refresh();
+    } catch (e) {
+      closeSheet();
+      snack(t('payFailed'), { tone: 'red' });
+    }
+  },
   'fam-rename'() {
     openSheet(() => `
       <h2 class="sheet-title">${esc(t('rename'))}</h2>
@@ -130,7 +171,7 @@ export const familyActions = {
   'fam-leave'() {
     confirmSheet({
       title: t('leaveFamily') + '?', sub: t('leaveFamilySub'), yes: t('leave'),
-      onYes: async () => { await family.leave(); refresh(); },
+      onYes: async () => { await family.leave(); seatInfo = null; refresh(); },
     });
   },
 };

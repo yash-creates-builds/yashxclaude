@@ -8,3 +8,11 @@ export const supabaseUrl = null;
 export const supabaseAnonKey = null;
 
 export const familyAvailable = () => !!(supabaseUrl && supabaseAnonKey);
+
+// Family seats: first person free, ₹19 (one time) for each extra person.
+// Phone apps pay through RevenueCat (Play Store / App Store billing). Paste the public SDK keys from
+// RevenueCat → Project → API keys. The website pays through Razorpay (set razorpayEnabled once the
+// razorpay-order / razorpay-webhook functions and their secrets are set up in Supabase).
+export const revenueCatKeys = { android: null, ios: null }; // 'goog_…', 'appl_…'
+export const razorpayEnabled = false;
+export const SEAT_PRICE = 19;
