@@ -1,0 +1,9 @@
+{
+  "name": "Dhobi Diary",
+  "short_name": "Dhobi Diary",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F2F5F8",
+  "theme_color": "#F2F5F8",
+  "icons": [{ "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml" }]
+}

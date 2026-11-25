@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="112" fill="#22D07B"/>
+  <!-- planner page -->
+  <rect x="118" y="96" width="276" height="330" rx="26" fill="#FFFFFF" stroke="#141414" stroke-width="14"/>
+  <path d="M190 72v56M256 72v56M322 72v56" stroke="#141414" stroke-width="18" stroke-linecap="round"/>
+  <!-- shirt -->
+  <path d="M220 182h72l40 22 26 38-28 22-18-14v104H200V250l-18 14-28-22 26-38z" fill="#74D2F5" stroke="#141414" stroke-width="14" stroke-linejoin="round"/>
+  <path d="M220 182l36 40 36-40" fill="none" stroke="#141414" stroke-width="14" stroke-linejoin="round" stroke-linecap="round"/>
+  <path d="M256 222v130" stroke="#141414" stroke-width="12" stroke-linecap="round"/>
+  <!-- tick -->
+  <circle cx="352" cy="370" r="62" fill="#141414" stroke="#FFFFFF" stroke-width="14"/>
+  <path d="m324 372 20 20 38-42" fill="none" stroke="#22D07B" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
