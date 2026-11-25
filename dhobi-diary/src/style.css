@@ -83,9 +83,10 @@ button:disabled { cursor: default; }
 .center { text-align: center; }
 
 /* ------------------------------------------------------------ home */
-.stats { display: grid; grid-template-columns: repeat(3, 1fr); border: var(--outline); border-radius: var(--radius); background: var(--paper); overflow: hidden; margin-bottom: 16px; }
-.stat { display: flex; flex-direction: column; justify-content: space-between; gap: 8px; padding: 10px 12px 12px; min-height: 92px; }
-.stat + .stat { border-left: 1.5px solid var(--ink); }
+.stats { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5px; border: var(--outline); border-radius: var(--radius); background: var(--ink); overflow: hidden; margin-bottom: 16px; }
+.stats-month { grid-column: 1 / -1; display: flex; align-items: center; gap: 8px; padding: 10px 12px; background: var(--paper-2); font-size: 1.05rem; }
+.stats-month b { font-weight: 500; }
+.stat { display: flex; flex-direction: column; justify-content: space-between; gap: 8px; padding: 10px 12px 12px; min-height: 92px; background: var(--paper); }
 .stat span { font-size: .9rem; font-weight: 450; color: var(--muted);   }
 .stat b { font-size: 2.3rem; font-weight: 400; text-align: right; font-variant-numeric: tabular-nums; line-height: .9;  letter-spacing: -.035em;}
 .stat-red { background: var(--red-50); }
@@ -421,7 +422,7 @@ button:disabled { cursor: default; }
 .attend.done { background: var(--go); min-height: 88px; }
 .attend-big { min-height: 22vh; margin: 0; border-radius: 28px; border-width: 3px; }
 .attend-big b { font-size: 2rem; }
-.stat-link { text-align: left; font: inherit; color: inherit; background: none; }
+.stat-link { text-align: left; font: inherit; color: inherit; background: var(--paper); }
 .stat-link span { display: inline-flex; align-items: center; gap: 2px; color: var(--accent) !important; }
 .stat-link span .ic { width: 1em; height: 1em; }
 

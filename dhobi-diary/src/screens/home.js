@@ -1,5 +1,5 @@
 import { screen, go, render } from '../ui/router.js';
-import { t, money, LANGS, getLang, fmtDate } from '../i18n/index.js';
+import { t, money, LANGS, getLang, fmtDate, fmtMonth } from '../i18n/index.js';
 import { I } from '../ui/icons.js';
 import { esc, batchCard, tabBar, snack } from '../ui/kit.js';
 import { getDB, addVisit, sortedVisits } from '../core/db.js';
@@ -64,14 +64,17 @@ screen('home', {
   view() {
     if (getDB().settings.grandma) return grandmaHome();
     const { open, out, missing, bill } = summary();
+    const givenThisMonth = bill.list.reduce((s, b) => s + givenCount(b), 0);
     return `<main class="screen home">
       <header class="home-head"><h1 class="brand"><span class="home-date">${esc(fmtDate(today(), { weekday: 'long', day: 'numeric', month: 'long' }))}</span>${esc(t('appName'))}</h1>${langChip()}</header>
       ${syncChip()}
       ${attendButton()}
 
       <section class="stats" aria-label="summary">
+        <div class="stats-month">${I.calendar}<b>${esc(fmtMonth(thisMonth()))}</b></div>
+        <div class="stat"><span>${esc(t('dayGiven'))}</span><b>${givenThisMonth}</b></div>
+        <button class="stat stat-link tap" data-act="bill" aria-label="${esc(t('seeBill'))}"><span>${esc(t('nav_bill'))} ${I.next}</span><b>${money(bill.total)}</b></button>
         <div class="stat"><span><i class="key key-sky"></i>${esc(t('withDhobi'))}</span><b>${out}</b></div>
-        <button class="stat stat-link tap" data-act="bill" aria-label="${esc(t('seeBill'))}"><span>${esc(t('thisMonth'))} ${I.next}</span><b>${money(bill.total)}</b></button>
         <div class="stat ${missing ? 'stat-red' : ''}"><span><i class="key key-red"></i>${esc(t('missing'))}</span><b>${missing}</b></div>
       </section>
 
