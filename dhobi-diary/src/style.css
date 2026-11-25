@@ -360,11 +360,15 @@ button:disabled { cursor: default; }
 @keyframes up { from { transform: translateY(100%); } }
 @keyframes fade { from { opacity: 0; } }
 
-.snack { position: fixed; z-index: 50; left: 16px; right: 16px; bottom: calc(env(safe-area-inset-bottom) + 96px); max-width: 488px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 60px; padding: 8px 8px 8px 18px; border-radius: 16px; background: var(--ink); color: #fff; font-weight: 500; opacity: 0; transform: translateY(12px); pointer-events: none; transition: opacity .2s, transform .2s; }
+.snack { position: fixed; z-index: 50; left: 16px; right: 16px; bottom: calc(env(safe-area-inset-bottom) + 92px); max-width: 488px; margin: 0 auto; display: flex; align-items: center; gap: 12px; min-height: 64px; padding: 8px 8px 8px 10px; border-radius: 18px; background: var(--paper); color: var(--ink); border: 2px solid var(--ink); box-shadow: 0 12px 32px rgba(20, 20, 20, .22), 0 2px 6px rgba(20, 20, 20, .12); font-weight: 500; opacity: 0; transform: translateY(16px) scale(.98); pointer-events: none; transition: opacity .18s, transform .22s cubic-bezier(.2, .8, .2, 1); }
+.snack-ic { width: 40px; height: 40px; flex: none; display: grid; place-items: center; border-radius: 99px; background: var(--go); color: var(--ink); }
+.snack-ic .ic { width: 22px; height: 22px; }
+.snack-txt { flex: 1; line-height: 1.25; }
 .snack.show { opacity: 1; transform: none; pointer-events: auto; }
-.snack.red { background: var(--red); }
+.snack.red { border-color: var(--red); }
+.snack.red .snack-ic { background: var(--red); color: #fff; }
 .snack.low { bottom: calc(env(safe-area-inset-bottom) + 16px); }
-.snack-undo { min-height: 48px; padding: 0 18px; border-radius: 12px; background: #fff; color: var(--ink); font-weight: 600; }
+.snack-undo { flex: none; min-height: 48px; padding: 0 18px; border-radius: 12px; background: var(--ink); color: var(--paper); font-weight: 600; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
@@ -485,3 +489,26 @@ button:disabled { cursor: default; }
 .big-stepper .cnt { font-size: 2rem; }
 
 .welcome-icon { display: block; width: 120px; height: 120px; margin: 0 auto 18px; border-radius: 28px; }
+
+/* Long lists: let the browser skip rows that are off screen */
+.list > .batch, .list > .visit-row { content-visibility: auto; contain-intrinsic-size: auto 92px; }
+.tab { -webkit-user-select: none; user-select: none; }
+
+/* App icon next to the title on Home */
+.home-id { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.home-icon { width: 48px; height: 48px; flex: none; border-radius: 12px; box-shadow: 0 0 0 1.5px var(--ink); }
+.home-id .brand { font-size: 1.9rem; }
+
+.home-id .brand { font-size: 1.7rem; white-space: nowrap; }
+.home-id .home-date { white-space: nowrap; }
+.home-head .chip-lang { flex: none; padding: 0 12px; }
+
+/* Today's date sits at the right end of the month bar */
+.today-pill { margin-left: auto; padding: 4px 12px; border-radius: 99px; background: var(--paper); border: 1.5px solid var(--ink); font-size: .9rem; font-weight: 500; white-space: nowrap; }
+.home-id .brand { font-size: 1.9rem; }
+
+/* Thinner bottom bar (still 52px tall targets) */
+.tabbar { padding: 4px 8px calc(env(safe-area-inset-bottom) + 4px); border-top-width: 1px; }
+.tab { min-height: 52px; gap: 1px; font-size: .78rem; border-radius: 12px; }
+.tab .ic { width: 22px; height: 22px; }
+.snack { bottom: calc(env(safe-area-inset-bottom) + 74px); }

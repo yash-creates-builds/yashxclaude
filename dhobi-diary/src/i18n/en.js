@@ -9,7 +9,7 @@ export default {
   i_blouse: 'Blouse', i_kids: 'Kids clothes', i_blazer: 'Blazer', i_sherwani: 'Sherwani / Lehenga', i_curtain: 'Curtain',
   i_other: 'Other',
   // nav
-  nav_home: 'Home', nav_history: 'History', nav_bill: 'Bill', nav_more: 'More',
+  nav_home: 'Home', nav_history: 'History', nav_bill: 'Bill', nav_more: 'Settings',
   // home
   give: 'Give clothes', giveSub: 'Clothes going to the dhobi',
   receive: 'Receive clothes', receiveSub: 'Clothes coming back',

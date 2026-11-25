@@ -3,9 +3,9 @@ import hi from './hi.js';
 import gu from './gu.js';
 
 export const LANGS = [
-  { id: 'en', label: 'English', locale: 'en-IN' },
-  { id: 'hi', label: 'हिंदी', locale: 'hi-IN' },
-  { id: 'gu', label: 'ગુજરાતી', locale: 'gu-IN' },
+  { id: 'en', label: 'English', short: 'EN', locale: 'en-IN' },
+  { id: 'hi', label: 'हिंदी', short: 'हि', locale: 'hi-IN' },
+  { id: 'gu', label: 'ગુજરાતી', short: 'ગુ', locale: 'gu-IN' },
 ];
 const DICTS = { en, hi, gu };
 let lang = 'en';

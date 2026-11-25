@@ -13,11 +13,11 @@ export const actions = (map) => Object.assign(globalActions, map);
 const app = () => document.getElementById('app');
 const sheetRoot = () => document.getElementById('sheet');
 
-export function go(name, params = {}, { replace = false, reset = false } = {}) {
+export function go(name, params = {}, { replace = false, reset = false, animate = true } = {}) {
   if (reset) S.stack = [];
   else if (!replace) S.stack.push(S.route);
   S.route = { name, params };
-  S.anim = 'in';
+  S.anim = animate ? 'in' : null;
   navHooks.forEach((fn) => fn());
   screens[name]?.onEnter?.(params);
   render();

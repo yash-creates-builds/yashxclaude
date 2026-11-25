@@ -44,23 +44,32 @@ const SHOTS = [
 
 (async () => {
   const b = await chromium.launch();
-  const screen = await b.newPage({ viewport: { width: 390, height: 760 }, deviceScaleFactor: 2.5 });
-  const frame = await b.newPage({ viewport: { width: 1080, height: 1920 } });
+  // Google Play 1080×1920 and App Store iPhone 6.9" 1290×2796
+  const SIZES = [
+    { w: 1080, h: 1920, vh: 760, dsf: 2.5, phone: 820, top: 120, font: 84, file: (n) => `screenshot-${n}.png` },
+    { w: 1290, h: 2796, vh: 844, dsf: 3, phone: 1010, top: 170, font: 100, file: (n) => `appstore-iphone-6.9-${n}.png` },
+  ];
+  for (const S of SIZES) {
+  const screen = await b.newPage({ viewport: { width: 390, height: S.vh }, deviceScaleFactor: S.dsf });
+  const frame = await b.newPage({ viewport: { width: S.w, height: S.h } });
   for (const [name, caption, steps] of SHOTS) {
     await screen.goto(URL);
     await screen.evaluate((d) => { localStorage.clear(); localStorage.setItem('dhobi-diary.db', JSON.stringify(d)); }, db);
     await screen.reload(); await screen.waitForTimeout(600);
     await steps(screen); await screen.waitForTimeout(700);
     const png = (await screen.screenshot()).toString('base64');
-    await frame.setContent(`<html><body style="margin:0;width:1080px;height:1920px;background:#F2F5F8;font-family:'Instrument Sans',system-ui,sans-serif;display:flex;flex-direction:column;align-items:center">
-      <h1 style="margin:120px 0 70px;font-size:84px;font-weight:500;letter-spacing:-.035em;line-height:1.05;text-align:center;color:#141414;white-space:pre-line">${caption}</h1>
-      <div style="width:820px;height:1598px;border:14px solid #141414;border-radius:90px;overflow:hidden;background:#fff;box-sizing:border-box">
+    const phoneH = Math.round((S.phone - 28) * S.vh / 390) + 28;
+    await frame.setContent(`<html><body style="margin:0;width:${S.w}px;height:${S.h}px;background:#F2F5F8;font-family:'Instrument Sans',system-ui,sans-serif;display:flex;flex-direction:column;align-items:center;overflow:hidden">
+      <h1 style="margin:${S.top}px 0 ${Math.round(S.top * 0.6)}px;font-size:${S.font}px;font-weight:500;letter-spacing:-.035em;line-height:1.05;text-align:center;color:#141414;white-space:pre-line">${caption}</h1>
+      <div style="width:${S.phone}px;height:${phoneH}px;border:14px solid #141414;border-radius:${Math.round(S.phone * 0.11)}px;overflow:hidden;background:#fff;box-sizing:border-box;flex:none">
         <img src="data:image/png;base64,${png}" style="width:100%;display:block"></div></body></html>`);
     await frame.waitForTimeout(200);
-    await frame.screenshot({ path: path.join(out, `screenshot-${name}.png`) });
+    await frame.screenshot({ path: path.join(out, S.file(name)) });
   }
+  await screen.close(); await frame.close();
+  }
+  const frame = await b.newPage({ viewport: { width: 1024, height: 500 } });
   // Feature graphic 1024×500
-  await frame.setViewportSize({ width: 1024, height: 500 });
   await frame.setContent(`<html><body style="margin:0;width:1024px;height:500px;background:#141414;color:#fff;display:flex;align-items:center;gap:56px;padding:0 80px;box-sizing:border-box;font-family:system-ui,sans-serif">
     <img src="data:image/png;base64,${iconPng}" style="width:300px;height:300px;border-radius:66px;flex:none">
     <div><div style="font-size:84px;font-weight:600;letter-spacing:-.04em;line-height:1">Dhobi Diary</div>
