@@ -10,6 +10,7 @@ import { setLang, guessLang } from './i18n/index.js';
 import { startRouter, actions, go, back, render, S, closeSheet, onNavigate, refresh } from './ui/router.js';
 import { hideSnackOnNavigate } from './ui/kit.js';
 import { onBackButton } from './platform/native.js';
+import { startAnalytics } from './platform/analytics.js';
 import { startSharing, family } from './features/sharing/index.js';
 import { applyGrandma } from './screens/settings.js';
 import { resetBillMonth } from './screens/bill.js';
@@ -39,6 +40,7 @@ async function boot() {
   onChange((_db, _label, meta) => { if (meta?.remote) redrawSoon(); });
   family.onStatus(redrawSoon);
   startSharing();
+  startAnalytics();
   actions({
     tab: (el) => {
       if (el.dataset.to === 'bill') resetBillMonth();
