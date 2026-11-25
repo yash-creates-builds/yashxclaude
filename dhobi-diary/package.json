@@ -1,0 +1,33 @@
+{
+  "name": "dhobi-diary",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Dhobi Diary — track clothes given to the dhobi. Offline, free, no login.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host",
+    "build": "vite build",
+    "preview": "vite preview --host",
+    "test": "node --test tests/*.test.js",
+    "app:sync": "vite build && cap sync",
+    "app:android": "vite build && cap sync android && cap open android",
+    "app:ios": "vite build && cap sync ios && cap open ios",
+    "app:icons": "node scripts/make-app-assets.cjs && capacitor-assets generate --android --ios --iconBackgroundColor '#3F46A8' --splashBackgroundColor '#FBF7F0'"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.0.0",
+    "@capacitor/app": "^8.0.0",
+    "@capacitor/core": "^8.0.0",
+    "@capacitor/filesystem": "^8.0.0",
+    "@capacitor/haptics": "^8.0.0",
+    "@capacitor/ios": "^8.0.0",
+    "@capacitor/local-notifications": "^8.0.0",
+    "@capacitor/share": "^8.0.0",
+    "@fontsource/archivo": "^5.0.0"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "^4.0.0",
+    "@capacitor/cli": "^8.0.0",
+    "vite": "^6.4.6"
+  }
+}
