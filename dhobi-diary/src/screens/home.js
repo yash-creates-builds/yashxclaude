@@ -78,6 +78,7 @@ screen('home', {
         <div class="stat ${missing ? 'stat-red' : ''}"><span><i class="key key-red"></i>${esc(t('missing'))}</span><b>${missing}</b></div>
       </section>
 
+      <div class="action-pair">
       <button class="big-action give tap" data-act="give">
         <span class="big-ic">${I.give}</span>
         <span class="big-txt"><b>${esc(t('give'))}</b><small>${esc(t('giveSub'))}</small></span>
@@ -87,6 +88,7 @@ screen('home', {
         <span class="big-txt"><b>${esc(t('receive'))}</b><small>${esc(t('receiveSub'))}</small></span>
         ${open.length ? `<span class="badge">${open.length}</span>` : ''}
       </button>
+      </div>
 
       <h2 class="section-title">${esc(t('pendingTitle'))}</h2>
       ${open.length
