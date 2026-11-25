@@ -101,7 +101,7 @@ button:disabled { cursor: default; }
 .big-txt { display: flex; flex-direction: column; gap: 2px; }
 .big-txt b { font-size: 1.4rem; font-weight: 500; line-height: 1.1; letter-spacing: -.02em; }
 .big-txt small { font-size: .9rem; font-weight: 500; opacity: .85; }
-.badge { position: absolute; top: -8px; right: 14px; min-width: 32px; height: 32px; padding: 0 9px; border-radius: 99px; background: var(--ink); color: #fff; display: grid; place-items: center; font-size: .9rem; font-weight: 600; }
+.badge { position: absolute; top: -8px; right: 14px; min-width: 32px; height: 32px; padding: 0 9px; border-radius: 99px; background: var(--sky); color: var(--ink); border: 1.5px solid var(--ink); display: grid; place-items: center; font-size: .9rem; font-weight: 600; }
 
 .calm { display: flex; align-items: center; gap: 10px; padding: 16px; border-radius: var(--radius-s); background: var(--paper-2); color: var(--ink-2); font-weight: 600; margin: 0; }
 .calm .ic { color: var(--green); }
