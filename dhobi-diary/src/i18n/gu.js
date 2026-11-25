@@ -5,7 +5,7 @@ export default {
   i_shirt: 'શર્ટ', i_tshirt: 'ટી-શર્ટ', i_pant: 'પેન્ટ', i_jeans: 'જીન્સ', i_kurta: 'કુર્તો', i_saree: 'સાડી',
   i_salwar: 'સલવાર સૂટ', i_dupatta: 'દુપટ્ટો', i_bedsheet: 'ચાદર', i_pillow: 'ઓશીકાનું કવર', i_towel: 'ટુવાલ',
   i_blouse: 'બ્લાઉઝ', i_kids: 'બાળકોનાં કપડાં', i_blazer: 'બ્લેઝર', i_sherwani: 'શેરવાની / ચણિયાચોળી', i_curtain: 'પડદો',
-  i_other: 'બીજું',
+  i_other: 'બીજું', i_pieces: 'બસ ગણતરી કરો', piecesHint: 'કપડાનું નામ પસંદ કરવાની જરૂર નથી',
   nav_home: 'હોમ', nav_history: 'જૂનાં', nav_bill: 'બિલ', nav_more: 'સેટિંગ',
   give: 'કપડાં આપ્યાં', giveSub: 'ધોબીને કપડાં આપવાનાં છે',
   receive: 'કપડાં પાછાં આવ્યાં', receiveSub: 'ધોબી પાસેથી કપડાં લેવાનાં છે',

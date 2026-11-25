@@ -519,3 +519,16 @@ button:disabled { cursor: default; }
 .seats-head .label { margin: 0; }
 .seats-head b { font-weight: 500; font-size: 1.05rem; }
 .seats .btn { min-height: 56px; font-size: 1.05rem; }
+
+/* "Just count pieces": full-width, sky blue, at the end of the grid */
+.tile.tile-pieces { grid-column: 1 / -1; background: var(--sky); border-width: 2px; }
+.tile.tile-pieces .art .f { fill: #fff; }
+.tile.tile-pieces.on { background: var(--sky); box-shadow: inset 0 0 0 2px var(--ink); border-color: var(--ink); }
+.tile-pieces.on .art .f { fill: #fff; }
+.tile-pieces .counter { border-top-color: rgba(20, 20, 20, .25); }
+.tile-pieces .cnt-btn.plus, .tile-pieces.on .cnt-btn.plus { background: var(--ink); }
+.tile-hint { font-size: .8rem; color: var(--ink-2); }
+/* "Other" spans the row too, so no empty gap before "Just count" */
+.grid > .tile-add { grid-column: 1 / -1; min-height: 96px; flex-direction: row; gap: 14px; justify-content: center; }
+.grid > .tile-add .tile-art { width: 48px; height: 48px; }
+.give.is-grandma .grid > .tile-add { min-height: 96px; }

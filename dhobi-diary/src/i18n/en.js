@@ -7,7 +7,7 @@ export default {
   i_shirt: 'Shirt', i_tshirt: 'T-shirt', i_pant: 'Pant', i_jeans: 'Jeans', i_kurta: 'Kurta', i_saree: 'Saree',
   i_salwar: 'Salwar suit', i_dupatta: 'Dupatta', i_bedsheet: 'Bedsheet', i_pillow: 'Pillow cover', i_towel: 'Towel',
   i_blouse: 'Blouse', i_kids: 'Kids clothes', i_blazer: 'Blazer', i_sherwani: 'Sherwani / Lehenga', i_curtain: 'Curtain',
-  i_other: 'Other',
+  i_other: 'Other', i_pieces: 'Just count pieces', piecesHint: 'No need to pick the type',
   // nav
   nav_home: 'Home', nav_history: 'History', nav_bill: 'Bill', nav_more: 'Settings',
   // home

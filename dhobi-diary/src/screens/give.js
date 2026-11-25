@@ -36,10 +36,10 @@ function tile(itemId) {
   const n = G.counts[key(itemId, G.service)] || 0;
   const others = SERVICES.filter((s) => s !== G.service && G.counts[key(itemId, s)])
     .map((s) => `<span class="mini">${esc(serviceName(s))} ${G.counts[key(itemId, s)]}</span>`).join('');
-  return `<div class="tile ${n ? 'on' : ''}" id="tile-${itemId}">
+  return `<div class="tile ${itemId === 'pieces' ? 'tile-pieces' : ''} ${n ? 'on' : ''}" id="tile-${itemId}">
     <button class="tile-face tap" data-act="inc" data-item="${itemId}" aria-label="${esc(itemName(itemId))} +1">
       <span class="tile-art">${itemArt(itemId)}</span>
-      <span class="tile-name">${esc(itemName(itemId))}</span>
+      <span class="tile-name">${esc(itemName(itemId))}</span>${itemId === 'pieces' ? `<small class="tile-hint">${esc(t('piecesHint'))}</small>` : ''}
       ${others ? `<span class="tile-others">${others}</span>` : ''}
     </button>
     <div class="counter">
@@ -112,8 +112,9 @@ screen('give', {
         </div>
       </section>
 
-      <section class="grid">${ids.map(tile).join('')}
+      <section class="grid">${ids.filter((id) => id !== 'pieces').map(tile).join('')}
         <button class="tile tile-add tap" data-act="add-item"><span class="tile-art">${itemArt('other')}</span><span class="tile-name">${esc(t('i_other'))}</span><small>${esc(t('otherHint'))}</small></button>
+        ${tile('pieces')}
       </section>
 
       <section class="form-block">

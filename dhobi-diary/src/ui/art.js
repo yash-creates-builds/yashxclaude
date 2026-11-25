@@ -19,6 +19,7 @@ export const ART = {
   kids: g(`<path class="f" d="M24 14h16l8 7-4 6-4-3v12l-3 14h-6l-1-7-1 7h-6l-3-14V24l-4 3-4-6z"/><path d="M28 14c0 3 2 5 4 5s4-2 4-5"/>${dot(32, 26)}${dot(32, 32)}<path d="M44 10l2-4 2 4 4 1-3 3 1 4-4-2-4 2 1-4-3-3z" stroke-width="1.8"/>`),
   blazer: g(`<path class="f" d="M22 8l10 6 10-6 10 6 4 40H8l4-40z"/><path d="M22 8l6 22 4-16 4 16 6-22"/><path d="M32 30v24"/>${dot(35, 38)}${dot(35, 45)}<path d="M14 40h8M42 40h8"/>`),
   sherwani: g(`<path class="f" d="M26 8h12l10 6 6 18-6 2-3-9v35H19V25l-3 9-6-2 6-18z"/><path d="M26 8v5h12V8"/><path d="M32 13v42"/>${dot(29, 20)}${dot(29, 28)}${dot(29, 36)}${dot(29, 44)}<path d="M19 50c4-2 8-2 13 0 5-2 9-2 13 0"/>`),
+  pieces: g(`<rect class="f" x="10" y="38" width="40" height="14" rx="4"/><rect class="f" x="10" y="24" width="40" height="14" rx="4"/><rect class="f" x="10" y="10" width="40" height="14" rx="4"/><circle cx="50" cy="48" r="11" fill="currentColor" stroke="none"/><path d="M46 48h8M50 44v8" stroke="#fff" stroke-width="2.6"/>`),
   curtain: g(`<path d="M6 10h52"/><path class="f" d="M10 10v44c6 0 10-2 12-6 0-12-4-26-4-38z"/><path class="f" d="M54 10v44c-6 0-10-2-12-6 0-12 4-26 4-38z"/><path d="M17 36h6M41 36h6"/>`),
   other: g(`<path d="M32 22v-3.5a5 5 0 1 0-5-5"/><path class="f" d="M32 22 8 40c-1.5 1.2-.7 3 1 3h46c1.7 0 2.5-1.8 1-3z"/><path d="M48 10v8M44 14h8" stroke-width="2.8"/>`),
 };
