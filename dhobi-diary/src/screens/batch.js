@@ -18,7 +18,8 @@ screen('batch', {
         ${statusPill(b)}
       </div>
       ${st === 'partial' ? `<div class="alert alert-red big" role="alert">${I.alert}<span><b>${esc(t('missingTitle'))}</b>${esc(t('missingAlert', missingText(b)))}</span></div>` : ''}
-      ${b.receivedDate ? `<p class="muted">${esc(t('receivedOn'))}: ${esc(fmtDate(b.receivedDate))}</p>` : ''}
+      ${b.by ? `<p class="muted">${esc(t('givenBy'))}: ${esc(b.by)}</p>` : ''}
+      ${b.receivedDate ? `<p class="muted">${esc(t('receivedOn'))}: ${esc(fmtDate(b.receivedDate))}${b.receivedBy ? ` · ${esc(t('byName', b.receivedBy))}` : ''}</p>` : ''}
       ${b.note ? `<p class="note">“${esc(b.note)}”</p>` : ''}
 
       <div class="table">

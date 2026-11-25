@@ -31,17 +31,19 @@ MADE FOR EVERY FAMILY
 • English, हिंदी, ગુજરાતી
 • Grandma Mode: only Give, Receive and Bill, extra large
 • More than one dhobi? No problem
-• Reminders on the days your dhobi comes
+• "Dhobi came" button: keeps the date, day and time of every visit
+• Family diary: everyone at home uses the same diary on their own phone. Join with a 6-letter code. No passwords.
 • Undo after saving, Excel (CSV) export, backup file
 
 PRIVATE BY DESIGN
-• 100% offline. No login. No ads. Free.
-• Your data never leaves your phone.
+• Works offline. No passwords. No ads. Free.
+• Without a family diary, your data never leaves your phone.
 ```
 
 ## Category
 House & Home (Google Play) · Lifestyle (App Store)
 
 ## Data safety (Google Play)
-- Data collected: **None** · Data shared: **None**
+- Data collected (only when a family diary is used): **App activity → Other user-generated content** (diary entries) and **Personal info → Name** (first name typed by the user). Purpose: App functionality. Encrypted in transit: Yes. Users can request deletion: Yes.
+- Data shared with third parties: **None** (Firebase is a service provider, not "sharing").
 - Privacy policy URL: host `public/privacy.html` (e.g. Vercel / GitHub Pages) and paste the link.

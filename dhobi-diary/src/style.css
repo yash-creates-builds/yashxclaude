@@ -364,3 +364,48 @@ button:disabled { cursor: default; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+/* ------------------------------------------------------------ dhobi visits */
+.visit-strip { display: flex; gap: 8px; margin-top: 2px; }
+.visit-btn { flex: 1; display: flex; align-items: center; gap: 12px; min-height: 76px; padding: 10px 14px; border-radius: var(--radius); border: 1.5px dashed var(--ink); background: var(--paper); text-align: left; }
+.visit-btn .big-ic { width: 48px; height: 48px; background: var(--paper-2); color: var(--ink); }
+.visit-btn .big-ic .ic { width: 26px; height: 26px; }
+.visit-btn .big-txt b { font-size: 1.15rem; }
+.visit-btn .big-txt small { font-size: .85rem; color: var(--muted); opacity: 1; }
+.visit-plus { margin-left: auto; width: 44px; height: 44px; flex: none; display: grid; place-items: center; border-radius: 99px; background: var(--ink); color: var(--paper); }
+.visit-all { flex: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; width: 76px; border-radius: var(--radius); border: 1.5px solid var(--ink); background: var(--paper); font-size: .85rem; font-weight: 500; color: var(--indigo); text-align: center; line-height: 1.1; padding: 6px; }
+.big-action.visit { background: var(--paper); border-style: dashed; }
+.visit-row { display: flex; align-items: center; gap: 14px; padding: 0 10px 0 0; min-height: 76px; border-radius: var(--radius-s); border: 1.5px solid var(--ink); background: var(--paper); overflow: hidden; }
+.visit-row .batch-date { align-self: stretch; border-right-style: solid; border-right-width: 1.5px; }
+.visit-row .batch-main { padding-block: 10px; }
+.mega-visit { background: var(--paper); border-style: dashed; min-height: 18vh; }
+
+.visit-now { display: flex; flex-direction: column; gap: 10px; margin: 12px 0 14px; padding: 16px; border-radius: var(--radius); background: var(--paper); border: 1.5px solid var(--ink); }
+.visit-day { font-size: 2.2rem; font-weight: 400; letter-spacing: -.035em; line-height: 1; color: var(--indigo); }
+.visit-fields { display: grid; grid-template-columns: 1.4fr 1fr; gap: 8px; }
+.visit-field { position: relative; display: flex; align-items: center; gap: 8px; min-height: var(--tap); padding: 0 12px; border-radius: var(--radius-s); background: var(--bg); border: 1.5px solid var(--ink); font-weight: 500; font-size: 1.05rem; }
+.visit-field .ic { color: var(--muted); }
+.visit-field input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; }
+
+/* ------------------------------------------------------------ family */
+.sync-chip { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 14px; margin: -6px 0 14px; border-radius: 99px; font-size: .9rem; font-weight: 500; background: var(--green-50); color: var(--green); }
+.sync-chip .ic { width: 1.2em; height: 1.2em; }
+.sync-pending, .sync-off { background: var(--amber-50); color: var(--amber); }
+.sync-removed { background: var(--red-50); color: var(--red); }
+.family-card { display: flex; flex-direction: column; gap: 8px; }
+.family-card .label { margin: 6px 0 0; }
+.code-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.fam-code { font-size: 2.3rem; font-weight: 500; letter-spacing: .08em; font-variant-numeric: tabular-nums; }
+.fam-code.big { display: block; text-align: center; font-size: 3rem; margin: 10px 0 4px; padding: 14px; border-radius: var(--radius); background: var(--paper); border: 1.5px dashed var(--ink); }
+.btn-small { width: auto; min-height: 48px; padding: 0 16px; font-size: 1rem; }
+.people { display: flex; flex-wrap: wrap; gap: 8px; }
+.person { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 14px 0 4px; border-radius: 99px; background: var(--paper-2); font-weight: 500; }
+.person i { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 99px; background: var(--indigo); color: #fff; font-style: normal; font-weight: 600; }
+.person.me { background: var(--indigo-50); }
+.person small { color: var(--muted); font-weight: 400; }
+.fam-actions { display: flex; gap: 8px; margin-top: 4px; }
+.fam-actions .btn { min-height: 52px; font-size: 1rem; }
+.code-field { font-size: 1.6rem; letter-spacing: .2em; text-transform: uppercase; text-align: center; }
+.busy { display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 28px 0; font-weight: 500; }
+.spinner { width: 44px; height: 44px; border-radius: 99px; border: 4px solid var(--indigo-100); border-top-color: var(--indigo); animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }

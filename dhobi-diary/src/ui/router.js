@@ -53,6 +53,7 @@ export const refresh = () => { const y = window.scrollY; render(); window.scroll
 /* ------------------------------------------------------- bottom sheet */
 export function openSheet(viewFn, sheetActions = {}) {
   S.sheet = { viewFn, actions: sheetActions };
+  document.getElementById('snack').className = 'snack'; // never cover the sheet's buttons
   const root = sheetRoot();
   root.innerHTML = `<div class="scrim" data-act="sheet-close"></div><div class="sheet" role="dialog" aria-modal="true">${viewFn()}</div>`;
   root.hidden = false;

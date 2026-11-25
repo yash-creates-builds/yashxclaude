@@ -5,12 +5,12 @@ import '@fontsource-variable/noto-sans-devanagari';
 import '@fontsource-variable/noto-sans-gujarati';
 import './style.css';
 
-import { initDB, getDB } from './core/db.js';
+import { initDB, getDB, onChange } from './core/db.js';
 import { setLang, guessLang } from './i18n/index.js';
-import { startRouter, actions, go, back, render, S, closeSheet, onNavigate } from './ui/router.js';
+import { startRouter, actions, go, back, render, S, closeSheet, onNavigate, refresh } from './ui/router.js';
 import { hideSnackOnNavigate } from './ui/kit.js';
 import { onBackButton } from './platform/native.js';
-import { startSharing } from './features/sharing/index.js';
+import { startSharing, family } from './features/sharing/index.js';
 import { applyGrandma } from './screens/settings.js';
 import { resetBillMonth } from './screens/bill.js';
 
@@ -23,6 +23,7 @@ import './screens/history.js';
 import './screens/bill.js';
 import './screens/rates.js';
 import './screens/settings.js';
+import './screens/visits.js';
 
 async function boot() {
   const db = await initDB();
@@ -30,6 +31,13 @@ async function boot() {
   applyGrandma(db.settings.grandma);
   startRouter();
   onNavigate(hideSnackOnNavigate);
+  // Changes from other family phones (or sync status) → redraw, unless someone is typing.
+  const redrawSoon = () => {
+    const typing = document.activeElement?.matches?.('input, select, textarea');
+    if (!typing && S.route.name !== 'welcome') refresh();
+  };
+  onChange((_db, _label, meta) => { if (meta?.remote) redrawSoon(); });
+  family.onStatus(redrawSoon);
   startSharing();
   actions({
     tab: (el) => {

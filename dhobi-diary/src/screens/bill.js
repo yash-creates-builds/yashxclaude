@@ -8,6 +8,7 @@ import { monthBill, receivedQty } from '../core/calc.js';
 import { thisMonth, shiftMonth, monthOf, today } from '../core/dates.js';
 import { SERVICES } from '../core/catalog.js';
 import { shareText, haptic, hapticSuccess } from '../platform/native.js';
+import { visitList, visitRows, visitActions } from './visits.js';
 
 const B = { month: thisMonth(), dhobi: '' };
 
@@ -26,18 +27,16 @@ function calendar(list) {
   const days = new Date(y, m, 0).getDate();
   const lead = (first.getDay() + 6) % 7;
   const given = new Set(list.map((b) => Number(b.date.slice(8))));
-  const back = new Set(getDB().batches
-    .filter((b) => b.receivedDate && monthOf(b.receivedDate) === B.month && (!B.dhobi || b.dhobiId === B.dhobi))
-    .map((b) => Number(b.receivedDate.slice(8))));
+  const came = new Set(visitList(B.month, B.dhobi || null).map((v) => Number(v.date.slice(8))));
   const letters = t('weekdayLetters');
   const heads = [1, 2, 3, 4, 5, 6, 0].map((d) => `<span class="cal-h">${esc(letters[d])}</span>`).join('');
   const todayD = monthOf(today()) === B.month ? Number(today().slice(8)) : 0;
   let cells = '<span class="cal-d blank"></span>'.repeat(lead);
   for (let d = 1; d <= days; d++) {
-    cells += `<span class="cal-d ${given.has(d) ? 'given' : ''} ${d === todayD ? 'today' : ''}">${d}${back.has(d) ? '<i></i>' : ''}</span>`;
+    cells += `<span class="cal-d ${given.has(d) ? 'given' : ''} ${d === todayD ? 'today' : ''}">${d}${came.has(d) ? '<i></i>' : ''}</span>`;
   }
   return `<div class="cal">${heads}${cells}</div>
-    <div class="cal-legend"><span><i class="lg-given"></i>${esc(t('dayGiven'))}</span><span><i class="lg-back"></i>${esc(t('dayBack'))}</span></div>`;
+    <div class="cal-legend"><span><i class="lg-given"></i>${esc(t('dayGiven'))}</span><span><i class="lg-back"></i>${esc(t('dhobiCame'))}</span></div>`;
 }
 
 /** WhatsApp-friendly plain text. */
@@ -65,6 +64,8 @@ export function billText() {
   lines.push('', `*${t('shareTotal')}: ${money(bill.total)}*`);
   if (bill.pendingItems) lines.push(`(${t('billPendingLine', bill.pendingItems)})`);
   if (bill.missingItems) lines.push(`(${t('billMissingLine', bill.missingItems)})`);
+  const vs = visitList(B.month, B.dhobi || null);
+  if (vs.length) lines.push(`${t('visitsTitle')}: ${t('visitsCount', vs.length)}`);
   if (isPaid(bill.list)) lines.push(`✅ ${t('paid')}`);
   lines.push('', `— ${t('shareFooter')}`);
   return lines.join('\n');
@@ -110,6 +111,8 @@ screen('bill', {
 
       ${calendar(bill.list)}
 
+      ${(() => { const vs = visitList(B.month, B.dhobi || null); return `<h2 class="section-title">${esc(t('visitsTitle'))}${vs.length ? ` · ${esc(t('visitsCount', vs.length))}` : ''}</h2>${vs.length ? visitRows(vs) : `<p class="calm">${esc(t('noVisits'))}</p>`}`; })()}
+
       <h2 class="section-title">${esc(t('nav_history'))}</h2>
       ${bill.list.length ? `<div class="list">${bill.list.map((b) => batchCard(b)).join('')}</div>` : `<p class="calm">${esc(t('noBatchesMonth'))}</p>`}
       <p class="fine">${esc(t('billNote'))}</p>
@@ -132,6 +135,7 @@ screen('bill', {
       if (r === 'copied') snack('✓ Copied');
     },
     'open-batch': (el) => go('batch', { id: el.dataset.id }),
+    ...visitActions,
   },
 });
 

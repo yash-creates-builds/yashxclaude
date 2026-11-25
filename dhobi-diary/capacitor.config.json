@@ -2,9 +2,10 @@
   "appId": "com.dhobidiary.app",
   "appName": "Dhobi Diary",
   "webDir": "dist",
-  "android": { "webContentsDebuggingEnabled": false },
-  "ios": { "contentInset": "never" },
-  "plugins": {
-    "LocalNotifications": { "iconColor": "#3F46A8" }
+  "android": {
+    "webContentsDebuggingEnabled": false
+  },
+  "ios": {
+    "contentInset": "never"
   }
 }
