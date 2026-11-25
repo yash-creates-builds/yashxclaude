@@ -415,12 +415,12 @@ button:disabled { cursor: default; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
 /* ------------------------------------------------------------ attendance button (top of home) */
-.attend { display: flex; align-items: center; gap: 16px; width: 100%; min-height: 108px; margin-bottom: 14px; padding: 16px 18px; border-radius: var(--radius); background: var(--ink); color: var(--paper); text-align: left; border: 2px solid var(--ink); }
-.attend-ic { width: 72px; height: 72px; flex: none; display: grid; place-items: center; border-radius: 99px; background: var(--go); color: var(--ink); }
+.attend { display: flex; align-items: center; gap: 16px; width: 100%; min-height: 108px; margin-bottom: 14px; padding: 16px 18px; border-radius: var(--radius); background: var(--sky); color: var(--ink); text-align: left; border: 2px solid var(--ink); }
+.attend-ic { width: 72px; height: 72px; flex: none; display: grid; place-items: center; border-radius: 99px; background: var(--ink); color: var(--sky); }
 .attend-ic .ic { width: 40px; height: 40px; }
 .attend-txt { display: flex; flex-direction: column; gap: 4px; }
 .attend-txt b { font-size: 1.6rem; font-weight: 500; letter-spacing: -.025em; line-height: 1.05; }
-.attend-txt small { font-size: 1rem; opacity: .85; }
+.attend-txt small { font-size: 1rem; opacity: .8; }
 .attend.done { background: var(--go); color: var(--ink); border-color: var(--ink); min-height: 84px; }
 .attend.done .attend-ic { width: 52px; height: 52px; background: var(--ink); color: var(--go); }
 .attend.done .attend-ic .ic { width: 28px; height: 28px; }
