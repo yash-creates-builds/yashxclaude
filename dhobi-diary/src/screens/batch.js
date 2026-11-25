@@ -17,9 +17,13 @@ screen('batch', {
         <div><b>${esc(fmtDate(b.date, { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' }))}</b><span>${esc(dhobiName(b.dhobiId))}</span></div>
         ${statusPill(b)}
       </div>
-      ${st === 'partial' ? `<div class="alert alert-red big" role="alert">${I.alert}<span><b>${esc(t('missingTitle'))}</b>${esc(t('missingAlert', missingText(b)))}</span></div>` : ''}
+      ${st === 'partial' ? `<div class="alert alert-red big" role="alert">${I.alert}<span><b>${esc(t('st_partial'))}</b>${esc(t('notBackYet', missingText(b)))}</span></div>` : ''}
       ${b.by ? `<p class="muted">${esc(t('givenBy'))}: ${esc(b.by)}</p>` : ''}
-      ${b.receivedDate ? `<p class="muted">${esc(t('receivedOn'))}: ${esc(fmtDate(b.receivedDate))}${b.receivedBy ? ` · ${esc(t('byName', b.receivedBy))}` : ''}</p>` : ''}
+      ${(b.receipts || []).length ? `<div class="receipts"><span class="label">${esc(t('backLog'))}</span>${b.receipts.map((r) => {
+        const n = Object.values(r.got).reduce((x, y) => x + y, 0);
+        const what = Object.entries(r.got).map(([k, q]) => `${q} ${itemName(k.split('|')[0])}`).join(', ');
+        return `<div class="receipt-row"><b>${esc(fmtDate(r.date, { weekday: 'short', day: 'numeric', month: 'short' }))}</b><span>${esc(t('items', n))} · ${esc(what)}${r.by ? ` · ${esc(t('byName', r.by))}` : ''}</span></div>`;
+      }).join('')}</div>` : b.receivedDate ? `<p class="muted">${esc(t('receivedOn'))}: ${esc(fmtDate(b.receivedDate))}</p>` : ''}
       ${b.note ? `<p class="note">“${esc(b.note)}”</p>` : ''}
 
       <div class="table">

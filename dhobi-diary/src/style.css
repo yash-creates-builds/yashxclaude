@@ -453,3 +453,22 @@ button:disabled { cursor: default; }
 .some-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-weight: 500; }
 .rchoices.three .rchoice { font-size: .95rem; gap: 4px; }
 .rchoices.three .rchoice .ic { width: 1.2em; height: 1.2em; }
+
+/* Receive: running count */
+.recv-count { display: flex; flex-direction: column; gap: 10px; padding: 16px 18px; margin-bottom: 16px; border-radius: var(--radius); border: 2px solid var(--ink); background: var(--paper); }
+.recv-count b { display: flex; align-items: center; gap: 8px; font-size: 1.7rem; font-weight: 500; letter-spacing: -.03em; }
+.recv-count b .ic { width: 1.1em; height: 1.1em; }
+.recv-bar { display: block; height: 12px; border-radius: 99px; background: var(--paper-2); border: 1.5px solid var(--ink); overflow: hidden; }
+.recv-bar i { display: block; height: 100%; background: var(--sky); transition: width .25s ease; }
+.recv-count.done { background: var(--go); }
+.recv-count.done .recv-bar i { background: var(--ink); }
+.recv-date { margin-bottom: 6px; }
+.recv-title { justify-content: space-between; }
+.recv-title::after { display: none; }
+.link-small { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 12px; border-radius: 99px; border: 1.5px solid var(--ink); background: var(--paper); font-size: .9rem; font-weight: 500; }
+.link-small .ic { width: 1.1em; height: 1.1em; }
+.rrow2.is-done .rrow2-top { opacity: .8; }
+.done-tick { margin-left: auto; width: 36px; height: 36px; display: grid; place-items: center; border-radius: 99px; background: var(--go); border: 1.5px solid var(--ink); }
+.receipts { display: flex; flex-direction: column; gap: 6px; margin: 10px 0; }
+.receipt-row { display: flex; flex-direction: column; padding: 10px 14px; border-radius: 12px; background: var(--paper); border: 1.5px solid var(--line); }
+.receipt-row span { color: var(--muted); font-size: .9rem; }

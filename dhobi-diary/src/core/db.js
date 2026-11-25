@@ -106,7 +106,9 @@ export const resetRates = () => change('ratesReset', () => {
  * A batch = one hand-over to the dhobi.
  * { id, dhobiId, date, createdAt, note,
  *   lines: [{ itemId, service, qty, rate }],  // rate is frozen at give time
- *   received: null | { 'itemId|service': qty }, receivedDate }
+ *   received: null | { 'itemId|service': qty }  (running total of everything back so far),
+ *   receipts: [{ date, got: { key: qty }, by }]  (each time clothes came back; dates can be back-dated),
+ *   receivedDate }  (latest receipt date)
  */
 export const addBatch = ({ dhobiId, date, lines, note = '' }) => change('saved', () => {
   const b = {
@@ -124,9 +126,25 @@ export const updateBatch = (id, patch) => change('saved', () => {
   return b;
 });
 
-export const receiveBatch = (id, received) => change('saved', () => {
+/** Add what came back now (on `date`) to what came back before. */
+export const receiveBatch = (id, add, date = today()) => change('saved', () => {
   const b = db.batches.find((x) => x.id === id);
-  if (b) { b.received = received; b.receivedDate = today(); b.receivedBy = by(); }
+  if (!b) return b;
+  const prev = b.received || {};
+  const next = {};
+  const got = {};
+  for (const l of b.lines) {
+    const k = `${l.itemId}|${l.service}`;
+    const n = Math.max(0, Math.min(l.qty - (prev[k] || 0), add[k] || 0));
+    next[k] = (prev[k] || 0) + n;
+    if (n) got[k] = n;
+  }
+  b.received = next;
+  b.receipts = [...(b.receipts || [])];
+  if (Object.keys(got).length) b.receipts.push({ date, got, by: by(), at: Date.now() });
+  const dates = b.receipts.map((r) => r.date).sort();
+  b.receivedDate = dates[dates.length - 1] || date;
+  b.receivedBy = by();
   return b;
 });
 

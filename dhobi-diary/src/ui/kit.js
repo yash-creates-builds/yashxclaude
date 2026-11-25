@@ -35,7 +35,7 @@ export function topBar(title, { backBtn = true, right = '' } = {}) {
 
 export function statusPill(b) {
   const st = statusOf(b);
-  if (st === 'partial') return `<span class="pill pill-red">${I.alert}${esc(t('missingAlert', String(missingOf(b).reduce((s, m) => s + m.qty, 0))))}</span>`;
+  if (st === 'partial') return `<span class="pill pill-red">${I.alert}${esc(t('notBackYet', String(missingOf(b).reduce((s, m) => s + m.qty, 0))))}</span>`;
   return `<span class="pill pill-${st}">${st === 'received' ? I.check : ''}${esc(statusName(st))}</span>`;
 }
 
