@@ -66,12 +66,12 @@ screen('home', {
     const { open, out, missing, bill } = summary();
     const givenThisMonth = bill.list.reduce((s, b) => s + givenCount(b), 0);
     return `<main class="screen home">
-      <header class="home-head"><div class="home-id"><img class="home-icon" src="${import.meta.env.BASE_URL}icon-192.png" alt="" width="48" height="48"><h1 class="brand"><span class="home-date">${esc(fmtDate(today(), { weekday: 'short', day: 'numeric', month: 'short' }))}</span>${esc(t('appName'))}</h1></div>${langChip()}</header>
+      <header class="home-head"><div class="home-id"><img class="home-icon" src="${import.meta.env.BASE_URL}icon-192.png" alt="" width="48" height="48"><h1 class="brand">${esc(t('appName'))}</h1></div>${langChip()}</header>
       ${syncChip()}
       ${attendButton()}
 
       <section class="stats" aria-label="summary">
-        <div class="stats-month">${I.calendar}<b>${esc(fmtMonth(thisMonth()))}</b></div>
+        <div class="stats-month">${I.calendar}<b>${esc(fmtMonth(thisMonth()))}</b><span class="today-pill">${esc(t('today'))} · ${esc(fmtDate(today(), { weekday: 'short', day: 'numeric' }))}</span></div>
         <div class="stat"><span>${esc(t('givenThisMonth'))}</span><b>${givenThisMonth}</b></div>
         <button class="stat stat-link tap" data-act="bill" aria-label="${esc(t('seeBill'))}"><span>${esc(t('nav_bill'))} ${I.next}</span><b>${money(bill.total)}</b></button>
         <div class="stat"><span><i class="key key-sky"></i>${esc(t('withDhobiNow'))}</span><b>${out}</b></div>

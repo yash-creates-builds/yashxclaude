@@ -502,3 +502,7 @@ button:disabled { cursor: default; }
 .home-id .brand { font-size: 1.7rem; white-space: nowrap; }
 .home-id .home-date { white-space: nowrap; }
 .home-head .chip-lang { flex: none; padding: 0 12px; }
+
+/* Today's date sits at the right end of the month bar */
+.today-pill { margin-left: auto; padding: 4px 12px; border-radius: 99px; background: var(--paper); border: 1.5px solid var(--ink); font-size: .9rem; font-weight: 500; white-space: nowrap; }
+.home-id .brand { font-size: 1.9rem; }
