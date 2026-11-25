@@ -63,7 +63,7 @@ const SHOTS = [
   await frame.setViewportSize({ width: 1024, height: 500 });
   await frame.setContent(`<html><body style="margin:0;width:1024px;height:500px;background:#22D07B;display:flex;align-items:center;gap:56px;padding:0 80px;box-sizing:border-box;font-family:system-ui,sans-serif;color:#141414">
     ${icon.replace('<svg ', '<svg width="260" height="260" ')}
-    <div><div style="font-size:84px;font-weight:600;letter-spacing:-.04em;line-height:1">Dhobi Diary</div>
+    <div><div style="font-size:84px;font-weight:600;letter-spacing:-.04em;line-height:1">Dhobi Khata</div>
     <div style="font-size:34px;margin-top:18px;line-height:1.25">Clothes given · came back · monthly bill<br>English · हिंदी · ગુજરાતી</div></div></body></html>`);
   await frame.screenshot({ path: path.join(out, 'feature-graphic-1024x500.png') });
   await b.close();

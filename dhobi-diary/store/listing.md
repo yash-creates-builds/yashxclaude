@@ -1,8 +1,8 @@
-# Store listing — Dhobi Diary (draft)
+# Store listing — Dhobi Khata (draft)
 
 ## App name (max 30)
 ```
-Dhobi Diary: Laundry Tracker
+Dhobi Khata: Laundry Tracker
 ```
 
 ## Short description (max 80)

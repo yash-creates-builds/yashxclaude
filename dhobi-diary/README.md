@@ -1,4 +1,4 @@
-# Dhobi Diary 👕
+# Dhobi Khata 👕
 
 Replaces the paper diary families use to track clothes given to the dhobi.
 **Works offline · no passwords · free · English / हिंदी / ગુજરાતી · optional family sync**
@@ -14,7 +14,7 @@ Replaces the paper diary families use to track clothes given to the dhobi.
 | Copy latest code into both apps | `npm run app:sync` |
 | Re-make app icons from `public/icon.svg` | `npm run app:icons` |
 
-App ID: `com.dhobidiary.app` (in `capacitor.config.json`). **Pick your final ID before the first store upload — it can never change after.**
+App ID: `com.dhobikhata.app` (in `capacitor.config.json`). **Pick your final ID before the first store upload — it can never change after.**
 
 ## How the code is organised
 

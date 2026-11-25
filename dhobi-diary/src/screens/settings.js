@@ -1,4 +1,4 @@
-// Settings: family diary, language, Grandma Mode, rates, dhobis, backup.
+// Settings: family khata, language, Grandma Mode, rates, dhobis, backup.
 import { screen, go, refresh, render, openSheet, closeSheet } from '../ui/router.js';
 import { t, LANGS, getLang, setLang } from '../i18n/index.js';
 import { I } from '../ui/icons.js';
@@ -125,8 +125,8 @@ screen('welcome', {
   view() {
     return `<main class="screen welcome">
       <div class="welcome-art">${I.bill}</div>
-      <h1 class="brand big">Dhobi Diary</h1>
-      <p class="welcome-sub">धोबी डायरी · ધોબી ડાયરી</p>
+      <h1 class="brand big">Dhobi Khata</h1>
+      <p class="welcome-sub">धोबी खाता · ધોબી ખાતું</p>
       <div class="stack">${LANGS.map((l) => `<button class="btn btn-outline btn-lang tap" data-act="pick" data-id="${l.id}" lang="${l.id}">${esc(l.label)}</button>`).join('')}</div>
     </main>`;
   },

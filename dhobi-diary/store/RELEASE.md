@@ -1,9 +1,9 @@
-# Google Play release checklist — Dhobi Diary
+# Google Play release checklist — Dhobi Khata
 
 Tick these in order. ⏱ = waiting time you can't skip.
 
 ## A. Before building (once)
-- [ ] **App ID** in `capacitor.config.json` + `android/app/build.gradle` is final (now `com.dhobidiary.app`). It can never change after the first upload.
+- [ ] **App ID** in `capacitor.config.json` + `android/app/build.gradle` is final (now `com.dhobikhata.app`). It can never change after the first upload.
 - [ ] **Supabase** set up and keys pasted (README → "One-time Supabase setup").
 - [ ] **Support email** added in `public/privacy.html`.
 - [ ] **Privacy policy online:** in `dhobi-diary/` run `npx vercel` (log in, accept defaults, root = this folder). The policy is then at `https://<your-site>.vercel.app/privacy.html`.
@@ -18,7 +18,7 @@ Output: `android/app/release/app-release.aab`.
 For every later update: raise `versionCode` (1 → 2 → 3…) and `versionName` in `android/app/build.gradle`.
 
 ## C. Play Console (https://play.google.com/console, $25 once)
-1. **Create app** → name "Dhobi Diary", default language English (India), App, Free.
+1. **Create app** → name "Dhobi Khata", default language English (India), App, Free.
 2. **Store listing:** copy text from `store/listing.md`. Upload:
    - App icon: `store/icon-512.png`
    - Feature graphic: `store/feature-graphic-1024x500.png`

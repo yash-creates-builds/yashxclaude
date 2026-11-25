@@ -4,7 +4,7 @@ android {
     namespace = "com.dhobidiary.app"
     compileSdk = rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "com.dhobidiary.app"
+        applicationId "com.dhobikhata.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

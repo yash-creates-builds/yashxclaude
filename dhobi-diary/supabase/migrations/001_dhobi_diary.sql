@@ -1,4 +1,4 @@
--- Dhobi Diary: family diary sync on Supabase.
+-- Dhobi Khata: family diary sync on Supabase.
 -- Run once: Supabase dashboard → SQL Editor → paste this file → Run.
 -- Also turn on: Authentication → Sign In / Providers → "Allow anonymous sign-ins".
 
