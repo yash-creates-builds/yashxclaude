@@ -47,4 +47,5 @@ House & Home (Google Play) · Lifestyle (App Store)
 ## Data safety (Google Play)
 - Data collected (only when a family diary is used): **App activity → Other user-generated content** (diary entries) and **Personal info → Name** (first name typed by the user). Purpose: App functionality. Encrypted in transit: Yes. Users can request deletion: Yes.
 - Data shared with third parties: **None** (Supabase is a service provider that stores data for us, not "sharing").
-- Privacy policy URL: host `public/privacy.html` (e.g. Vercel / GitHub Pages) and paste the link.
+- Privacy policy URL: https://dhobidiary.vercel.app/privacy.html
+- Website: https://dhobidiary.vercel.app

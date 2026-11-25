@@ -6,7 +6,7 @@ const path = require('path');
 const fs = require('fs');
 const URL = process.env.URL || 'http://localhost:4180';
 const out = path.join(__dirname, '..', 'store');
-const icon = fs.readFileSync(path.join(__dirname, '..', 'public', 'icon.svg'), 'utf8');
+const iconPng = fs.readFileSync(path.join(__dirname, '..', 'public', 'icon-512.png')).toString('base64');
 
 const iso = (daysAgo) => { const d = new Date(); d.setDate(d.getDate() - daysAgo); return d.toISOString().slice(0, 10); };
 const R = { shirt: { iron: 10 }, pant: { iron: 10 }, kurta: { iron: 12 }, saree: { dry: 250 }, bedsheet: { wash: 50 }, towel: { wash: 20 } };
@@ -61,8 +61,8 @@ const SHOTS = [
   }
   // Feature graphic 1024×500
   await frame.setViewportSize({ width: 1024, height: 500 });
-  await frame.setContent(`<html><body style="margin:0;width:1024px;height:500px;background:#22D07B;display:flex;align-items:center;gap:56px;padding:0 80px;box-sizing:border-box;font-family:system-ui,sans-serif;color:#141414">
-    ${icon.replace('<svg ', '<svg width="260" height="260" ')}
+  await frame.setContent(`<html><body style="margin:0;width:1024px;height:500px;background:#141414;color:#fff;display:flex;align-items:center;gap:56px;padding:0 80px;box-sizing:border-box;font-family:system-ui,sans-serif">
+    <img src="data:image/png;base64,${iconPng}" style="width:300px;height:300px;border-radius:66px;flex:none">
     <div><div style="font-size:84px;font-weight:600;letter-spacing:-.04em;line-height:1">Dhobi Diary</div>
     <div style="font-size:34px;margin-top:18px;line-height:1.25">Clothes given · came back · monthly bill<br>English · हिंदी · ગુજરાતી</div></div></body></html>`);
   await frame.screenshot({ path: path.join(out, 'feature-graphic-1024x500.png') });

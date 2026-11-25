@@ -483,3 +483,5 @@ button:disabled { cursor: default; }
 .big-stepper { grid-column: 1 / -1; display: grid; grid-template-columns: 72px 1fr 72px; align-items: center; margin-top: 6px; border: 1.5px solid var(--ink); border-radius: 14px; overflow: hidden; }
 .big-stepper .cnt-btn { height: 64px; }
 .big-stepper .cnt { font-size: 2rem; }
+
+.welcome-icon { display: block; width: 120px; height: 120px; margin: 0 auto 18px; border-radius: 28px; }
