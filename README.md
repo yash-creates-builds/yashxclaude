@@ -1,13 +1,6 @@
-# yashxclaude
+# Seeti 🍲
 
-Two apps live in this repository:
-
-| App | What it does | Code | Live |
-|---|---|---|---|
-| 👕 **Dhobi Diary** | Tracks clothes given to the dhobi: give / receive, missing items, dhobi visits, monthly bill, family sync. English · हिंदी · ગુજરાતી | [`dhobi-diary/`](dhobi-diary/) · [README](dhobi-diary/README.md) | [dhobidiary.vercel.app](https://dhobidiary.vercel.app) · App Store (in review) |
-| 🍲 **Seeti** | Listens to your pressure cooker and counts the whistles | this folder (root) · see below | |
-
----
+> 👕 Looking for **Dhobi Diary**? It moved to its own repository: **[yash-creates-builds/dhobi-diary](https://github.com/yash-creates-builds/dhobi-diary)** · live at [dhobidiary.vercel.app](https://dhobidiary.vercel.app)
 
 ## Seeti 🍲 — cooker whistle counter
 

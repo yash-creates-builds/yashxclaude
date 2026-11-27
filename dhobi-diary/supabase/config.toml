@@ -1,7 +1,0 @@
-# Payment webhooks are called by RevenueCat / Razorpay (not by a signed-in user),
-# so they check their own secret instead of a Supabase login.
-[functions.revenuecat-webhook]
-verify_jwt = false
-
-[functions.razorpay-webhook]
-verify_jwt = false

@@ -1,7 +1,0 @@
-<?xml version='1.0' encoding='utf-8'?>
-<resources>
-    <string name="app_name">Dhobi Diary</string>
-    <string name="title_activity_main">Dhobi Diary</string>
-    <string name="package_name">com.dhobidiary.app</string>
-    <string name="custom_url_scheme">com.dhobidiary.app</string>
-</resources>
