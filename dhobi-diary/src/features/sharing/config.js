@@ -16,3 +16,5 @@ export const familyAvailable = () => !!(supabaseUrl && supabaseAnonKey);
 export const revenueCatKeys = { android: null, ios: null }; // 'goog_…', 'appl_…'
 export const razorpayEnabled = false;
 export const SEAT_PRICE = 19;
+// v1.0 launch: paid seats are off (families get 5 free places, see migration 003). Set true for v1.1.
+export const paidSeats = false;

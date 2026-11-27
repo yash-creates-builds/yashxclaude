@@ -16,7 +16,7 @@ function busySheet() {
 function errorText(e) {
   const m = String(e?.message);
   if (m.includes('bad-code')) return t('badCode');
-  if (m.includes('family-full')) return t('familyFull');
+  if (m.includes('family-full')) return family.paidSeats() ? t('familyFull') : t('familyFullFree');
   return t('needInternet');
 }
 
@@ -34,6 +34,12 @@ function seatBlock() {
   const { used, total } = seatInfo;
   const pct = Math.min(100, Math.round((used / total) * 100));
   const ready = family.paymentsReady();
+  if (!family.paidSeats()) {
+    return `<div class="seats">
+      <div class="seats-head"><span class="label">${esc(t('membersTitle'))}</span><b>${esc(t('seatsUsed', used, total))}</b></div>
+      <span class="recv-bar"><i style="width:${pct}%"></i></span>
+    </div>`;
+  }
   return `<div class="seats">
     <div class="seats-head"><span class="label">${esc(t('seatsTitle'))}</span><b>${esc(t('seatsUsed', used, total))}</b></div>
     <span class="recv-bar"><i style="width:${pct}%"></i></span>

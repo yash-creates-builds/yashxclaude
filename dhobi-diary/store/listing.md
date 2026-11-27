@@ -33,7 +33,7 @@ MADE FOR EVERY FAMILY
 • More than one dhobi? No problem
 • One big "Dhobi came today" button: keeps the date, day and time of every visit
 • Receive with ✓ / ✗ for each item, or pick how many came back. Partly back? Finish it later, even on a past date.
-• Family diary: everyone at home uses the same diary on their own phone. Join with a 6-letter code. First person free, ₹19 one time for each extra person.
+• Family diary: everyone at home (up to 5 people) uses the same diary on their own phone. Join with a 6-letter code.
 • Undo after saving, Excel (CSV) export, backup file
 
 PRIVATE BY DESIGN

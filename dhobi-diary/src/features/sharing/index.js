@@ -2,7 +2,7 @@
 // Screens only talk to this file. The backend code is loaded only when a family is used,
 // so phones without sharing never download or run it. Backend: Supabase (see supabase-sync.js).
 import { getDB, setFamily, setSetting } from '../../core/db.js';
-import { familyAvailable, revenueCatKeys, razorpayEnabled } from './config.js';
+import { familyAvailable, revenueCatKeys, razorpayEnabled, paidSeats } from './config.js';
 import { Capacitor } from '@capacitor/core';
 
 let impl = null;
@@ -37,8 +37,9 @@ export const family = {
   },
   async rename(name) { setSetting('userName', name); if (impl) await impl.rename(name); },
   /** Can this phone pay for seats yet? */
+  paidSeats: () => paidSeats,
   paymentsReady() {
-    if (!familyAvailable()) return false;
+    if (!familyAvailable() || !paidSeats) return false;
     if (Capacitor.isNativePlatform()) return !!revenueCatKeys[Capacitor.getPlatform() === 'ios' ? 'ios' : 'android'];
     return razorpayEnabled;
   },
