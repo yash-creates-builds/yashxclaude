@@ -8,3 +8,6 @@ android/app/build
 android/.gradle
 ios/App/Pods
 ios/App/build
+
+# Dhobi Diary moved to github.com/yash-creates-builds/dhobi-diary (local build leftovers only)
+dhobi-diary/
