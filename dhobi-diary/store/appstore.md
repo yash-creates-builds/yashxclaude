@@ -42,7 +42,7 @@ MADE FOR EVERY FAMILY
 • Grandma Mode: only Give, Receive and Bill, extra large.
 • More than one dhobi? No problem.
 • Undo, Excel (CSV) export and backup file.
-• Family diary: one diary on every phone at home. First person free, ₹19 one time for each extra person.
+• Family diary: one diary on every phone at home, for up to 5 people. Join with a 6-letter code.
 
 PRIVATE
 • Works offline. No sign-up. No ads. Free.
@@ -57,8 +57,8 @@ PRIVATE
 - Price: Free · Availability: India (add more countries any time)
 
 ## App Privacy ("nutrition label")
-- Today (family sharing off): **Data Not Collected**.
-- Once family sharing is switched on, change to: **User Content → Other User Content**, **Contact Info → Name** and **Purchases → Purchase History**. Both are *not linked to identity* and *not used for tracking*, purpose *App Functionality*.
+- Version 1.0 (family sharing is on): choose the items below.
+- Choose: **User Content → Other User Content**, **Contact Info → Name** and **Purchases → Purchase History** (only once paid seats are switched on in a later version). Both are *not linked to identity* and *not used for tracking*, purpose *App Functionality*.
 
 ## Screenshots
 - iPhone 6.9" (1290 × 2796): `store/appstore-iphone-6.9-1…5-*.png`, upload all 5 in order.
@@ -66,5 +66,5 @@ PRIVATE
 
 ## App Review notes (paste into "Notes")
 ```
-No login needed. Tap a language, then "Give clothes" to add a bundle, and "Receive clothes" to mark what came back. All data is stored on the device. Family sharing is optional and not enabled in this version.
+No login needed. Tap a language, then "Give clothes" to add a bundle, and "Receive clothes" to mark what came back. All data is stored on the device. Family sharing is optional: Settings → Family → Start a family diary creates a 6-letter code that another phone can join with.
 ```
