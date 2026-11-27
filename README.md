@@ -1,11 +1,15 @@
-# Seeti 🍲 — cooker whistle counter
+# Seeti 🍲
+
+> 👕 Looking for **Dhobi Diary**? It moved to its own repository: **[yash-creates-builds/dhobi-diary](https://github.com/yash-creates-builds/dhobi-diary)** · live at [dhobidiary.vercel.app](https://dhobidiary.vercel.app)
+
+## Seeti 🍲 — cooker whistle counter
 
 A mobile web app (installable PWA) that listens to your pressure cooker, counts the whistles, and tells you when to turn off the gas.
 
 - No backend, no API keys, nothing recorded or uploaded.
 - Works offline after the first load (the AI model is cached too).
 
-## Run locally
+### Run locally
 
 ```bash
 npm install
@@ -14,7 +18,7 @@ npm run dev
 
 Open the URL it prints. The mic works on `localhost` without HTTPS.
 
-## Test on your phone (needs HTTPS)
+### Test on your phone (needs HTTPS)
 
 Option A — deploy to Vercel:
 
@@ -34,7 +38,7 @@ npx cloudflared tunnel --url http://localhost:4173
 
 Open the `https://…` link it gives you on your phone.
 
-## How detection works
+### How detection works
 
 | Layer | What it checks |
 |---|---|
@@ -44,7 +48,7 @@ Open the `https://…` link it gives you on your phone.
 
 After each count, Seeti ignores sound for 6 s (one whistle = one count).
 
-## Files
+### Files
 
 | File | Job |
 |---|---|
@@ -57,7 +61,7 @@ After each count, Seeti ignores sound for 6 s (one whistle = one count).
 
 Optional: to self-host the AI model, put YAMNet's `model.json` + shards in `public/models/yamnet/`.
 
-## Phone apps (App Store + Play Store)
+### Phone apps (App Store + Play Store)
 
 The same code builds the website **and** the iPhone + Android apps (wrapped with Capacitor).
 
